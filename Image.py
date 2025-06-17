@@ -1,6 +1,10 @@
 
 import cv2
 import numpy as np
+import torch
+import torch.nn.functional as F
+import line_profiler
+import torch
 
 emap = np.load("emap.npy")
 input_std = 255.0
@@ -90,3 +94,52 @@ def drawKeypoints(image, keypoints, colorBGR, keypointsRadius=2):
     for kp in keypoints:
         x, y = int(kp[0]), int(kp[1])
         cv2.circle(image, (x, y), radius=keypointsRadius, color=colorBGR, thickness=-1) # BGR format, -1 means filled circle
+
+# @line_profiler.profile
+def blend_swapped_image_gpu(swapped_face, target_image, M):
+    h, w = target_image.shape[:2]
+    M_inv = cv2.invertAffineTransform(M)
+
+    # Warp swapped face
+    warped_face = cv2.warpAffine(
+        swapped_face,
+        M_inv,
+        (w, h),
+        borderValue=0.0
+    )
+
+    # Create white mask
+    img_white = np.full(swapped_face.shape[:2], 255, dtype=np.float32)
+    img_mask = cv2.warpAffine(
+        img_white,
+        M_inv,
+        (w, h),
+        borderValue=0.0
+    )
+
+    # Threshold and refine mask
+    img_mask[img_mask > 20] = 255
+
+    mask_h_inds, mask_w_inds = np.where(img_mask == 255)
+    if len(mask_h_inds) > 0 and len(mask_w_inds) > 0:
+        mask_h = np.max(mask_h_inds) - np.min(mask_h_inds)
+        mask_w = np.max(mask_w_inds) - np.min(mask_w_inds)
+        mask_size = int(np.sqrt(mask_h * mask_w))
+
+        k = max(mask_size // 10, 10)
+        kernel = np.ones((k, k), np.uint8)
+        img_mask = cv2.erode(img_mask, kernel, iterations=1)
+
+        # k = max(mask_size // 20, 5)
+        # blur_size = (2 * k + 1, 2 * k + 1)
+        # img_mask = cv2.GaussianBlur(img_mask, blur_size, 0)
+
+    # Move to GPU for blending
+    img_mask = torch.from_numpy(img_mask).to('cuda').unsqueeze(2)/255  # HWC, single channel
+    warped_face = torch.from_numpy(warped_face).to(device='cuda')
+    target_image = torch.from_numpy(target_image).to(device='cuda')
+    # Blend
+    result = img_mask * warped_face + (1 - img_mask) * target_image
+    result = result.clamp(0, 255).byte().cpu().numpy()  # Back to CPU and uint8
+
+    return result
