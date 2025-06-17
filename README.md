@@ -9,7 +9,7 @@ Here is the comparesion of the output of Inswapper and Reswapper.
 | ![image](example/2/target.jpg) |![image](example/2/source.jpg) | ![image](example/2/inswapperOutput.jpg) | ![image](example/2/reswapperOutput-1399500_256.jpg) | ![image](example/2/reswapperOutput-1019500.jpg) | ![image](example/2/reswapperOutput-429500.jpg) |
 | ![image](example/3/target.jpg) |![image](example/3/source.png) | ![image](example/3/inswapperOutput.jpg) | ![image](example/3/reswapperOutput-1399500_256.jpg) | ![image](example/3/reswapperOutput-1019500.jpg) | ![image](example/3/reswapperOutput-429500.jpg) |
 
-## Installation
+## Installation(Python 3.10.18)
 
 ```bash
 git clone https://github.com/somanchiu/ReSwapper.git
@@ -22,6 +22,12 @@ pip install -r requirements.txt
 
 pip install torch torchvision --force --index-url https://download.pytorch.org/whl/cu121
 pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+```
+## Quick Use of Live Cam
+```
+python .\swap.py --source <img>.png --modelPath /path/to/model --minimal <bool> --obs <bool>
+# if minimal true, face swap blend is minimized for faster fps
+#if obs true, it will send face swap frames to obs virtual camera
 ```
 
 ## The details of inswapper
@@ -141,10 +147,7 @@ Enhancing data diversity will improve output quality, you can pass "enableDataAu
 
 </details>
 
-## Inference
-```python
-python swap.py
-```
+
 
 ## Face Attribute Modification
 The source embedding contains information about various facial attributes. Modifying the source enables adjustments to specific attributes.
