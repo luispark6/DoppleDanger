@@ -37,7 +37,7 @@ def get_device():
 def load_model(model_path):
     device = get_device()
     model = StyleTransferModel().to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device), strict=False)
+    model.load_state_dict(torch.load(model_path, map_location=device, weights_only=False), strict=False)
     model.eval()
     return model
 
