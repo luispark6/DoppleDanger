@@ -110,21 +110,20 @@ def main():
                 continue
 
             target_face = faces[0]
-            x1,y1,x2,y2 = target_face['bbox']
+            # x1,y1,x2,y2 = target_face['bbox']
             aligned_face, M = face_align.norm_crop2(frame, target_face.kps, args.resolution)
             face_blob = Image.getBlob(aligned_face, (args.resolution, args.resolution))
 
             try:
                 swapped_face = swap_face(model, face_blob, source_latent)
-                final_frame = Image.blend_swapped_image_gpu(swapped_face, frame, M, args.minimal)
+                final_frame = Image.blend_swapped_image(swapped_face, frame, M)
                 # cv2.rectangle(final_frame,(int(x1),int(y1)), (int(x2),int(y2)), (255,0,0), 2)
-                frame[int(y1):int(y2), int(x1):int(x2)] = final_frame[int(y1):int(y2), int(x1):int(x2)]
                 if cam:
-                    output_img = cv2.resize(frame, (960, 540))
+                    output_img = cv2.resize(final_frame, (960, 540))
                     cam.send(output_img)
                     cam.sleep_until_next_frame()
                 else:
-                    cv2.imshow('Live Face Swap', cv2.resize(frame, (960, 540)))
+                    cv2.imshow('Live Face Swap', cv2.resize(final_frame, (960, 540)))
             except Exception as e:
                 print(f"Swap error: {e}")
                 cv2.imshow('Live Face Swap', frame)
