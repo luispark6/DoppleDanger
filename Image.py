@@ -95,8 +95,8 @@ def drawKeypoints(image, keypoints, colorBGR, keypointsRadius=2):
         x, y = int(kp[0]), int(kp[1])
         cv2.circle(image, (x, y), radius=keypointsRadius, color=colorBGR, thickness=-1) # BGR format, -1 means filled circle
 
-# @line_profiler.profile
-def blend_swapped_image_gpu(swapped_face, target_image, M):
+@line_profiler.profile
+def blend_swapped_image_gpu(swapped_face, target_image, M, minimal):
     h, w = target_image.shape[:2]
     M_inv = cv2.invertAffineTransform(M)
 
@@ -107,6 +107,14 @@ def blend_swapped_image_gpu(swapped_face, target_image, M):
         (w, h),
         borderValue=0.0
     )
+    if minimal:
+        # # Create a mask where warped_face is non-zero
+        mask = ((warped_face[..., 0] | warped_face[..., 1] | warped_face[..., 2]) > 0).astype(np.uint8) * 255
+
+        # Use the mask to paste onto the target image
+        mask_3ch = cv2.merge([mask, mask, mask])  # Convert to 3 channels
+        result = np.where(mask_3ch == 255, warped_face, target_image)
+        return result
 
     # Create white mask
     img_white = np.full(swapped_face.shape[:2], 255, dtype=np.float32)
@@ -130,9 +138,9 @@ def blend_swapped_image_gpu(swapped_face, target_image, M):
         kernel = np.ones((k, k), np.uint8)
         img_mask = cv2.erode(img_mask, kernel, iterations=1)
 
-        # k = max(mask_size // 20, 5)
-        # blur_size = (2 * k + 1, 2 * k + 1)
-        # img_mask = cv2.GaussianBlur(img_mask, blur_size, 0)
+        k = max(mask_size // 20, 5)
+        blur_size = (2 * k + 1, 2 * k + 1)
+        img_mask = cv2.GaussianBlur(img_mask, blur_size, 0)
 
     # Move to GPU for blending
     img_mask = torch.from_numpy(img_mask).to('cuda').unsqueeze(2)/255  # HWC, single channel
