@@ -24,7 +24,8 @@ def parse_arguments():
     parser.add_argument('--resolution', type=int, default=128, help='Resolution of the face crop')
     parser.add_argument('--face_attribute_direction', default=None, help='Path to face attribute direction.npy')
     parser.add_argument('--face_attribute_steps', type=float, default=0.0, help='Amount to move in attribute direction')
-    parser.add_argument('--obs', type=bool, default=False, help='Send frames to obs virtual cam')
+    parser.add_argument('--obs', action='store_true', help='Send frames to obs virtual cam')
+    parser.add_argument('--mouth_mask', action='store_true', help='Retain target mouth')
 
 
 
@@ -145,6 +146,15 @@ def main():
             try:
                 swapped_face = swap_face(model, face_blob, source_latent)
                 final_frame = Image.blend_swapped_image_gpu(swapped_face, frame, M)
+                if args.mouth_mask:
+                    face_mask = Image.create_face_mask(target_face, frame)
+                    _, mouth_cutout, mouth_box, lower_lip_polygon = (
+                        Image.create_lower_mouth_mask(target_face, frame)
+                    )
+                    final_frame = Image.apply_mouth_area(
+                        final_frame, mouth_cutout, mouth_box, face_mask, lower_lip_polygon
+                    )
+
                 # cv2.rectangle(final_frame,(int(x1),int(y1)), (int(x2),int(y2)), (255,0,0), 2)
                 if cam:
                     output_img = cv2.resize(final_frame, (960, 540))
