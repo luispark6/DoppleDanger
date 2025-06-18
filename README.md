@@ -25,8 +25,7 @@ pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visua
 ```
 ## Quick Use of Live Cam
 ```
-python .\swap.py --source <img>.png --modelPath /path/to/model --minimal <bool> --obs <bool>
-# if minimal true, face swap blend is minimized for faster fps
+python .\swap.py --source <img>.png --modelPath /path/to/model 
 #if obs true, it will send face swap frames to obs virtual camera
 ```
 
