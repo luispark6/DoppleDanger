@@ -105,42 +105,25 @@ def blend_swapped_image_gpu(swapped_face, target_image, M, minimal):
         swapped_face,
         M_inv,
         (w, h),
-        borderValue=0.0
+        borderMode= 0
     )
-    if minimal:
-        # # Create a mask where warped_face is non-zero
-        mask = ((warped_face[..., 0] | warped_face[..., 1] | warped_face[..., 2]) > 0).astype(np.uint8) * 255
-
-        # Use the mask to paste onto the target image
-        mask_3ch = cv2.merge([mask, mask, mask])  # Convert to 3 channels
-        result = np.where(mask_3ch == 255, warped_face, target_image)
-        return result
-
     # Create white mask
-    img_white = np.full(swapped_face.shape[:2], 255, dtype=np.float32)
-    img_mask = cv2.warpAffine(
-        img_white,
-        M_inv,
-        (w, h),
-        borderValue=0.0
-    )
-
+    img_white = np.full(swapped_face.shape[:2], 255, dtype=np.uint8)
+    img_mask = cv2.warpAffine(img_white, M_inv, (w, h), flags=cv2.INTER_NEAREST, borderValue=0)
     # Threshold and refine mask
-    img_mask[img_mask > 20] = 255
 
-    mask_h_inds, mask_w_inds = np.where(img_mask == 255)
-    if len(mask_h_inds) > 0 and len(mask_w_inds) > 0:
-        mask_h = np.max(mask_h_inds) - np.min(mask_h_inds)
-        mask_w = np.max(mask_w_inds) - np.min(mask_w_inds)
-        mask_size = int(np.sqrt(mask_h * mask_w))
+    _, _, w_box, h_box = cv2.boundingRect(img_mask)
+    mask_size = int(np.sqrt(w_box * h_box))
 
-        k = max(mask_size // 10, 10)
-        kernel = np.ones((k, k), np.uint8)
-        img_mask = cv2.erode(img_mask, kernel, iterations=1)
 
-        k = max(mask_size // 20, 5)
-        blur_size = (2 * k + 1, 2 * k + 1)
-        img_mask = cv2.GaussianBlur(img_mask, blur_size, 0)
+    k = max(mask_size // 10, 10)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (k, k))
+    img_mask = cv2.erode(img_mask, kernel, iterations=1)
+
+
+    k_blur = max(mask_size // 20, 5)
+    blur_size = (2 * k_blur + 1, 2 * k_blur + 1)
+    img_mask = cv2.GaussianBlur(img_mask, blur_size, 0)
 
     # Move to GPU for blending
     img_mask = torch.from_numpy(img_mask).to('cuda').unsqueeze(2)/255  # HWC, single channel
