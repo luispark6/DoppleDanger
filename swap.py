@@ -25,7 +25,6 @@ def parse_arguments():
     parser.add_argument('--face_attribute_direction', default=None, help='Path to face attribute direction.npy')
     parser.add_argument('--face_attribute_steps', type=float, default=0.0, help='Amount to move in attribute direction')
     parser.add_argument('--obs', type=bool, default=False, help='Send frames to obs virtual cam')
-    parser.add_argument('--minimal', type=bool, default=False, help='If minimal face blending is wanted')
 
 
 
@@ -52,8 +51,7 @@ def swap_face(model, target_face, source_face_latent):
     swapped_face = Image.postprocess_face(swapped_tensor)
     return swapped_face
 
-def create_source_latent(source_img_path, direction_path=None, steps=0.0):
-    source_image = cv2.imread(source_img_path)
+def create_source_latent(source_image, direction_path=None, steps=0.0):
     faces = faceAnalysis.get(source_image)
     if len(faces) == 0:
         print("No face detected in source image.")
@@ -66,14 +64,37 @@ def create_source_latent(source_img_path, direction_path=None, steps=0.0):
         source_latent += direction * steps
     return source_latent
 
+def apply_color_transfer(source_path, target):
+    """
+    Apply color transfer from target to source image
+    """
+    source = cv2.imread(source_path)
+    target_faces = faceAnalysis.get(target)
+    x1, y1, x2, y2= target_faces[0]["bbox"]
+    target = target[int(y1): int(y2), int(x1):int(x2)]
+    source = cv2.cvtColor(source, cv2.COLOR_BGR2LAB).astype("float32")
+    target = cv2.cvtColor(target, cv2.COLOR_BGR2LAB).astype("float32")
+
+    source_mean, source_std = cv2.meanStdDev(source)
+    target_mean, target_std = cv2.meanStdDev(target)
+
+    # Reshape mean and std to be broadcastable
+    source_mean = source_mean.reshape(1, 1, 3)
+    source_std = source_std.reshape(1, 1, 3)
+    target_mean = target_mean.reshape(1, 1, 3)
+    target_std = target_std.reshape(1, 1, 3)
+
+    # Perform the color transfer
+    source = (source - source_mean) * (target_std / source_std) + target_mean
+
+    return cv2.cvtColor(np.clip(source, 0, 255).astype("uint8"), cv2.COLOR_LAB2BGR)
+
+
 # @line_profiler.profile
 def main():
     args = parse_arguments()
     model = load_model(args.modelPath)
-    source_latent = create_source_latent(args.source, args.face_attribute_direction, args.face_attribute_steps)
-
-    if source_latent is None:
-        return
+    
 
     cap = cv2.VideoCapture(0)  # Open webcam
     if not cap.isOpened():
@@ -84,16 +105,22 @@ def main():
     frame_count = 0
     cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL)  # <--- This makes window resizable
 
-
+    create_latent_flag = True
     print("Press 'q' to quit.")
     prev_time = time.time()
-
     print("Starting live face swap. Press 'q' to quit.")
     with pyvirtualcam.Camera(width=960, height=540, fps=20, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
+            if create_latent_flag:
+                source = apply_color_transfer(source_path=args.source, target= frame)
+                source_latent = create_source_latent(source, args.face_attribute_direction, args.face_attribute_steps)
+                if source_latent is None:
+                    return "Face not found in source image"
+                create_latent_flag = False
+                
             current_time = time.time()
             frame_count += 1
             if current_time - prev_time >= fps_update_interval:
@@ -110,13 +137,14 @@ def main():
                 continue
 
             target_face = faces[0]
+
             # x1,y1,x2,y2 = target_face['bbox']
             aligned_face, M = face_align.norm_crop2(frame, target_face.kps, args.resolution)
             face_blob = Image.getBlob(aligned_face, (args.resolution, args.resolution))
 
             try:
                 swapped_face = swap_face(model, face_blob, source_latent)
-                final_frame = Image.blend_swapped_image(swapped_face, frame, M)
+                final_frame = Image.blend_swapped_image_gpu(swapped_face, frame, M)
                 # cv2.rectangle(final_frame,(int(x1),int(y1)), (int(x2),int(y2)), (255,0,0), 2)
                 if cam:
                     output_img = cv2.resize(final_frame, (960, 540))
