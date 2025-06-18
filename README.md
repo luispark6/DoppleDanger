@@ -25,8 +25,9 @@ pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visua
 ```
 ## Quick Use of Live Cam
 ```
-python .\swap.py --source <img>.png --modelPath /path/to/model 
-#if obs true, it will send face swap frames to obs virtual camera
+python .\swap.py --source <img>.png --modelPath /path/to/model --obs --mouth_mask
+#if obs flag set, it will send face swap frames to obs virtual camera
+#if mouth_mask flag set, it will retain targets mouth 
 ```
 
 ## The details of inswapper
