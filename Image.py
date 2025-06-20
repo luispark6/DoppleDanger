@@ -95,7 +95,7 @@ def drawKeypoints(image, keypoints, colorBGR, keypointsRadius=2):
         x, y = int(kp[0]), int(kp[1])
         cv2.circle(image, (x, y), radius=keypointsRadius, color=colorBGR, thickness=-1) # BGR format, -1 means filled circle
 
-@line_profiler.profile
+# @line_profiler.profile
 def blend_swapped_image_gpu(swapped_face, target_image, M):
     h, w = target_image.shape[:2]
     M_inv = cv2.invertAffineTransform(M)
