@@ -268,25 +268,19 @@ def main():
 
             imwrite(textured_blurred_img, save_restore_path)
 
-
-
-
+    
     # Get all filenames in the directory
-    all_files = os.listdir("./temp_results2")
+    all_files = os.listdir("./temp_results2/restored_imgs")
 
     # Filter for files ending in .jpg
-    image_filenames = [os.path.join("./temp_results2", f) for f in all_files if f.lower().endswith('.jpg')]
-
-    clips = ImageSequenceClip(image_filenames, fps = fps)
-    if not no_audio:
+    image_filenames = [os.path.join("./temp_results2/restored_imgs", f) for f in all_files if f.lower().endswith('.jpg')]
+    clips = ImageSequenceClip(image_filenames, fps = 25)
+    if not True:
         clips = clips.with_audio(video_audio_clip)
     clips.write_videofile("output.mp4", codec='libx264', audio_codec='aac')
 
     shutil.rmtree("./temp_results2")
     shutil.rmtree(temp_results_dir)
-
-
-
 
 
 
