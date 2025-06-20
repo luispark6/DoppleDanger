@@ -7,6 +7,8 @@ wandb/*
 tmp/*
 gfpgan/*
 models/*
+temp_results
+temp_results2
 version.py
 *.jpg
 # Byte-compiled / optimized / DLL files
