@@ -12,23 +12,53 @@ Here is the comparesion of the output of Inswapper and Reswapper.
 ## Installation(Python 3.10.18)
 
 ```bash
-git clone https://github.com/somanchiu/ReSwapper.git
+git clone git@github.com:luispark6/DoppleDanger.git
 cd ReSwapper
 python -m venv venv
 
 venv\scripts\activate
+or
+conda create -n gfpgan_env python=3.10
 
 pip install -r requirements.txt
 
 pip install torch torchvision --force --index-url https://download.pytorch.org/whl/cu121
 pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 ```
+
+- You must then install the GFPGAN model and place it in the models directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
+
+- Finally, download one of the inswapper models found below in the **Pretrained Model** section and place it in the models directory as well.
+
+- Note that these both should be .pth files
+
+
+### After installation, you’ll need to modify the degradations.py file in your basicsr module.
+You can typically find it at:
+```
+<your_env_path>/Lib/site-packages/basicsr/data/degradations.py
+```
+The 8th line should look like the following:
+```
+from torchvision.transforms.functional_tensor import rgb_to_grayscale
+```
+Simply change this line to the following:
+```
+from torchvision.transforms.functional import rgb_to_grayscale
+```
+
 ## Quick Use of Live Cam
 ```
-python .\swap.py --source <img>.png --modelPath /path/to/model --obs --mouth_mask
+python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs --mouth_mask
 #if obs flag set, it will send face swap frames to obs virtual camera
 #if mouth_mask flag set, it will retain targets mouth 
 ```
+
+## Quick Use of Converting Video
+```
+python .\swap_video.py --source ..\elonmusk.png --target_video .\<video>.mp4 --modelPath .\models\<reswapper_model>.pth 
+```
+
 
 ## The details of inswapper
 
