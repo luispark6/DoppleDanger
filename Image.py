@@ -310,7 +310,7 @@ def create_lower_mouth_mask(face, frame):
         cv2.fillPoly(mask_roi, [expanded_landmarks - [min_x, min_y]], 255)
 
         # Apply Gaussian blur to soften the mask edges
-        mask_roi = cv2.GaussianBlur(mask_roi, (15, 15), 5)
+        mask_roi = cv2.GaussianBlur(mask_roi, (15, 15), 5)    
 
         # Place the mask ROI in the full-sized mask
         mask[min_y:max_y, min_x:max_x] = mask_roi
