@@ -19,6 +19,7 @@ python -m venv venv
 venv\scripts\activate
 or
 conda create -n gfpgan_env python=3.10
+conda activate gfpgan_env
 
 pip install -r requirements.txt
 
