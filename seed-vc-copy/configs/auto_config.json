@@ -1,0 +1,13 @@
+{
+  "reference_audio_path": "examples/reference/reference.wav",
+  "diffusion_steps": 10,
+  "inference_cfg_rate": 0.7,
+  "max_prompt_length": 3.0,
+  "block_time": 0.25,
+  "crossfade_length": 0.05,
+  "extra_time_ce": 2.5,
+  "extra_time": 0.5,
+  "extra_time_right": 2.0,
+  "samplerate": 44100,
+  "channels": 1
+}
