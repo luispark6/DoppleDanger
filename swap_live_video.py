@@ -27,8 +27,6 @@ def parse_arguments():
     parser.add_argument('--obs', action='store_true', help='Send frames to obs virtual cam')
     parser.add_argument('--mouth_mask', action='store_true', help='Retain target mouth')
 
-
-
     return parser.parse_args()
 
 def get_device():
@@ -94,6 +92,9 @@ def apply_color_transfer(source_path, target):
 
 # @line_profiler.profile
 def main():
+    # print("cuda_is_available: %s", torch.cuda.is_available())
+    # return
+    
     args = parse_arguments()
     model = load_model(args.modelPath)
     
