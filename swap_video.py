@@ -138,7 +138,7 @@ def main():
         bg_upsampler = None
 
     restorer = GFPGANer(
-        model_path="./models/GFPGANv1.3.pth",
+        model_path="./models/GFPGANv1.4.pth",
         upscale=2,
         arch="clean",
         channel_multiplier=2,
@@ -234,7 +234,7 @@ def main():
         input_img = cv2.imread(img_path, cv2.IMREAD_COLOR)
 
         # restore faces and background if necessary
-        cropped_faces, restored_faces, restored_img = restorer.enhance(
+        _, _, restored_img = restorer.enhance(
             input_img,
             has_aligned=args.aligned,
             only_center_face=args.only_center_face,
@@ -274,8 +274,8 @@ def main():
 
     # Filter for files ending in .jpg
     image_filenames = [os.path.join("./temp_results2/restored_imgs", f) for f in all_files if f.lower().endswith('.jpg')]
-    clips = ImageSequenceClip(image_filenames, fps = 25)
-    if not True:
+    clips = ImageSequenceClip(image_filenames, fps = fps)
+    if not no_audio:
         clips = clips.with_audio(video_audio_clip)
     clips.write_videofile("output.mp4", codec='libx264', audio_codec='aac')
 
