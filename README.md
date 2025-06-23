@@ -14,17 +14,18 @@ Here is the comparesion of the output of Inswapper and Reswapper.
 ```bash
 git clone git@github.com:luispark6/DoppleDanger.git
 cd ReSwapper
-python -m venv venv
 
+python -m venv venv
 venv\scripts\activate
 or
-conda create -n gfpgan_env python=3.10
-conda activate gfpgan_env
+conda create -n reswap python=3.10
+conda activate reswap
 
-pip install -r requirements.txt
+pip install -r requirements.txt --no-deps
 
-pip install torch torchvision --force --index-url https://download.pytorch.org/whl/cu121
+pip install torch torchvision torchaudio --force --index-url https://download.pytorch.org/whl/cu121
 pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install numpy==1.26.4
 ```
 
 - You must then install the GFPGAN model and place it in the models directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
