@@ -1,15 +1,16 @@
-# ReSwapper
+# DoppleDanger
 
-ReSwapper aims to reproduce the implementation of inswapper. This repository provides code for training, inference, and includes pretrained weights.
+DoppleDanger utilizes live face swapping and live voice cloning as a hyper-realistic impersonation technique. We used the [ReSwapper repository](https://github.com/somanchiu/ReSwapper) for the face swapping, and the [seed-vc repository](https://github.com/Plachtaa/seed-vc) for the voice cloning. 
 
-Here is the comparesion of the output of Inswapper and Reswapper.
-| Target | Source | Inswapper Output | Reswapper Output<br>(256 resolution)<br>(Step 1399500) | Reswapper Output<br>(Step 1019500) | Reswapper Output<br>(Step 429500) | 
-|--------|--------|--------|--------|--------|--------|
-| ![image](example/1/target.jpg) |![image](example/1/source.jpg) | ![image](example/1/inswapperOutput.jpg) | ![image](example/1/reswapperOutput-1399500_256.jpg) |![image](example/1/reswapperOutput-1019500.jpg) | ![image](example/1/reswapperOutput-429500.jpg) |
-| ![image](example/2/target.jpg) |![image](example/2/source.jpg) | ![image](example/2/inswapperOutput.jpg) | ![image](example/2/reswapperOutput-1399500_256.jpg) | ![image](example/2/reswapperOutput-1019500.jpg) | ![image](example/2/reswapperOutput-429500.jpg) |
-| ![image](example/3/target.jpg) |![image](example/3/source.png) | ![image](example/3/inswapperOutput.jpg) | ![image](example/3/reswapperOutput-1399500_256.jpg) | ![image](example/3/reswapperOutput-1019500.jpg) | ![image](example/3/reswapperOutput-429500.jpg) |
+In a way, this is an extension/improvement of the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The [ReSwapper repository](https://github.com/somanchiu/ReSwapper) is an attempt to replicate the face swapping model found in the  [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The reason why we simply don't just use the model from the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam) is because this model seems to have some GPU bottleneck that significantly increases inference time. This bottleneck results in the live swapping functionality to average at about 8-10 fps(RTX-3090) with only about 10-15 percent of the GPU being utilized. 
 
-## Installation(Python 3.10.18)
+Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps. 
+
+## Installation
+### Platform
+- [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
+- python==3.10
+### Clone and Dependencies
 
 ```bash
 git clone git@github.com:luispark6/DoppleDanger.git
@@ -27,6 +28,7 @@ pip install torch torchvision torchaudio --force --index-url https://download.py
 pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install numpy==1.26.4
 ```
+### Models
 
 - You must then install the GFPGAN model and place it in the models directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
 
@@ -34,11 +36,20 @@ pip install numpy==1.26.4
 
 - Note that these both should be .pth files
 
+### Optional Downloads
+- If you want to stream the live face swap to a virtual camera, you must download [obs](https://obsproject.com/). 
+- If you want to stream the live voice cloning to a virtual audio cable, you must download [VB-Audio](https://vb-audio.com/Cable/)(Windows) or Pulse Audio(Linux)
+- If these are desired functionalities, please read the **Virtual Camera/Audio** section for more information 
+
 
 ### After installation, you’ll need to modify the degradations.py file in your basicsr module.
-You can typically find it at:
+If using conda, you can typically find this file at:
 ```
 <your_env_path>/Lib/site-packages/basicsr/data/degradations.py
+```
+If using python venv, you can typically find this file at:
+```
+.\DoppleDanger\venv\Lib\site-packages\basicsr\data\degradations.py
 ```
 The 8th line should look like the following:
 ```
@@ -49,79 +60,107 @@ Simply change this line to the following:
 from torchvision.transforms.functional import rgb_to_grayscale
 ```
 
-## Quick Use of Live Cam
+## Live Face Swap 
 ```
-python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs --mouth_mask
-#if obs flag set, it will send face swap frames to obs virtual camera
-#if mouth_mask flag set, it will retain targets mouth 
+python .\swap_live_video.py --source <img>.png --modelPath /path/to/model 
+```
+| Argument                     | Type    | Required | Default | Description                                                                                                                |
+| ---------------------------- | ------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--source`                   | `str`   | ✅ Yes    | —       | Path to the **source face image** (used for swapping onto webcam feed).                                                    |
+| `--modelPath`                | `str`   | ✅ Yes    | —       | Path to the **trained face swap model** file (e.g., `.pth` or `.onnx`).                                                    |
+| `--resolution`               | `int`   | ❌ No     | `128`   | Resolution (in pixels) to which detected faces will be cropped and resized before processing.                              |
+| `--face_attribute_direction` | `str`   | ❌ No     | `None`  | Path to a `.npy` file containing a **face attribute direction vector**, used to modify facial features (e.g., beard). |
+| `--face_attribute_steps`     | `float` | ❌ No     | `0.0`   | Amount to **move along the attribute direction**. Higher values apply stronger feature changes.                            |
+| `--obs`                      | `flag`  | ❌ No     | `False` | If set, **sends frames to OBS virtual camera** (requires OBS virtual cam installed and active).                            |
+| `--mouth_mask`               | `flag`  | ❌ No     | `False` | If set, **retains the target (webcam) mouth** instead of replacing it with the source mouth.                               |
+| `--delay`                    | `int`   | ❌ No     | `0`     | Time delay in milliseconds to apply to the livestream. Useful for synchronizing the face swap video with voice cloning or other audio sources during a live stream|
+| `--fps_delay`                | `flag`  | ❌ No     | `False` | If set, **displays FPS and delay time** on the top corner of the output video.                                             |
+
+- During the livestream, you can increase or decrease delay time(50ms) by pressing plus(+) or minus(-) 
+
+## Live Voice Cloning
+```
+cd seed_vc
+python real-time-gui.py
 ```
 
-## Quick Use of Converting Video
+GUI after running 'python real-time-gui.py
+![alt text](./png_files/seed_vc_gui.png "")
+
+- Use the settings above for best balance of performance and inference speed
+- Press Start Voice Conversion after inputting proper fields
+
+
+## Quick Use of Converting Video(Optional for high quality face cloning using recorded video)
 ```
-python .\swap_video.py --source ..\elonmusk.png --target_video .\<video>.mp4 --modelPath .\models\<reswapper_model>.pth 
-```
-
-
-## The details of inswapper
-
-### Model architecture
-The inswapper model architecture can be visualized in [Netron](https://netron.app). You can compare with ReSwapper implementation to see architectural similarities. Exporting the model with opset_version=10 makes it easier to compare the graph in Netron. However, it will cause issue #8.
-
-We can also use the following Python code to get more details:
-```python
-model = onnx.load('test.onnx')
-printable_graph=onnx.helper.printable_graph(model.graph)
+python .\swap_video.py --source ..\<img>.png --target_video .\<video>.mp4 --modelPath .\models\<reswapper_model>.pth 
 ```
 
-The model architectures of InSwapper and SimSwap are extremely similar and worth paying attention to.
 
-### Model inputs
-- target: [1, 3, 128, 128] shape image in RGB format with face alignment, normalized to [0, 1] range
-- source (latent): [1, 512] shape vector, the features of the source face, obtained using the ArcFace model.
-    - Calculation of latent
-        - The details of ArcFace model
-            - Architecture: IResNet50
-            - Input: [1, 3, 112, 112] shape image in RGB format with face alignment, normalized to [-1, 1] range
-            - Output: [1, 512] shape vector
-        - "emap" can be extracted from the original inswapper model.
-        ```python
-        from numpy.linalg import norm as l2norm
+## Coordinating Live Face Swap and Voice Cloning
+1. First open two terminals, both running on the same virtual environment
+2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model``` on terminal 1
+3. Then run ```cd seed_vc``` and ```python real-time-gui.py```
+4. Pick the refrence audio, input/output device, and setting values, then press ```Start Voice Conversion```
+5. Now press on the live face-swap recording window (the window that popped up after running step 2) and press + or - to decrease or increase the delay time(50ms). Do this until the voice cloning synchronizes with the face swap
 
-        input_mean = 127.5
-        input_std = 127.5
-        input_size = (112, 112)
+NOTE: We have to synchronize because the voice cloning inference time is slower than the face swap inference time. So if we delay the face swap, they will then be synchronized. 
 
-        aimg, _ = face_align.norm_crop2(img, landmark=face.kps, image_size=input_size[0])
+## Virtual Camera/Audio
+You can also stream the live face swap and the voice cloning to a video meeting such as Zoom, Google Meets, Microsoft Teams Meeting, etc.. 
 
-        blob = cv2.dnn.blobFromImages([aimg], 1.0 / input_std, input_size,
-                                      (input_mean, input_mean, input_mean), swapRB=True)
-        net_out = session.run(output_names, {input_name: blob})[0]
+### Virtual Camera
+To send the live face swaps to a video meeting, please follow the steps below:
+1. Download  [obs](https://obsproject.com/) (compatible for Windows, Mac, Linux)
+2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set)
+3. Go to the preferred video meeting platform (we will use google meets as an example)
+4. 
+![alt text](./png_files/googlemeets.png "")
+Go to the camera settings, and pick ```OBS Virtual Camera```
 
-        embedding = net_out.flatten()
+5. Your all set! The live face swap should be shown in the virtual meeting
 
-        normed_embedding = embedding / l2norm(embedding)
+### Virtual Audio
+To send the live voice cloning to a video meeting, please follow the steps below:
+#### Windows:
+1. Download [VB-Audio](https://vb-audio.com/Cable/)
+2. run ```cd seed_vc```
+3. run ```python real-time-gui.py```
+4. 
+![alt text](./png_files/seed_vc_gui.png "")
+**Set the Output Device** to **Cable Input (VB-Audio Virtual C)**
 
-        latent = normed_embedding.reshape((1,-1))
-        latent = np.dot(latent, emap)
-        latent /= np.linalg.norm(latent)
-        ```
-    - It can also be used to calculate the similarity between two faces using cosine similarity.
+5. Go to the preferred video meeting platform (we will use google meets as an example)
 
-### Model output
-Model inswapper_128 not only changes facial features, but also body shape.
+6. 
+![alt text](./png_files/googlmeetsaudio.png "")
+**Set the Audio Input** to **Cable Output (VB-Audio Virtual Cable)**
 
-| Target | Source | Inswapper Output | Reswapper Output<br>(Step 429500) |
-|--------|--------|--------|--------|
-| ![image](example/1/target.jpg) |![image](example/1/source.jpg) | ![image](example/1/inswapperOutput.gif) | ![image](example/1/reswapperOutput.gif) |
+7. You should be all set!
 
-### Loss Functions
-There is no information released from insightface. It is an important part of the training. However, there are a lot of articles and papers that can be referenced. By reading a substantial number of articles and papers on face swapping, ID fidelity, and style transfer, you'll frequently encounter the following keywords:
-- content loss
-- style loss/id loss
-- perceptual loss
+#### Linux
+1. run ```sudo apt install pulseaudio pavucontrol```
+2. run ```pavucontrol```
+3. run ```pactl load-module module-null-sink sink_name=VirtualSink sink_properties=device.description=Virtual_Audio_Cable```   
+This creates Virtual Output:  
+Output:Virtual_Audio_Cable
+Input: Monitor of Virtual_Audio_Cable
+4. run ```python real-time-gui.py```
+5. In the gui, pick **Virtual_Audio_Cable** as the output
+6. In the virtual meeting platform, go under Microphone and choose **Monitor of Virtual_Audio_Cable** as the input
+7. You show be alls set!
 
-### Face alignment
-Face alignment is handled incorrectly at resolutions other than 128. To resolve this issue, add an offset to "dst" in both x and y directions in the function "face_align.estimate_norm". The offset is approximately given by the formula: Offset = (128/32768) * Resolution - 0.5
+I have not yet tried this method so please send an issue if it does not work.
+
+#### Delay Time for Live Face Swap for Virtual Camera
+- To delay the Live Face Swap for synchronization with the voice cloning, run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs```, and an empty pop-up window will appear(it is empty because frames are being sent to the virtual camera). 
+
+![alt text](./png_files/empty_popup.png "")
+
+- Then, click the empty window, and press either + or - to toggle the delay time by 50ms
+
+
+
 
 ## Training
 <details open>
