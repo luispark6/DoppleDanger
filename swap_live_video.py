@@ -12,6 +12,9 @@ import line_profiler
 import pyvirtualcam
 from pyvirtualcam import PixelFormat
 from contextlib import nullcontext
+from collections import deque
+
+
 
 # Setup face detector
 faceAnalysis = FaceAnalysis(name='buffalo_l')
@@ -26,6 +29,8 @@ def parse_arguments():
     parser.add_argument('--face_attribute_steps', type=float, default=0.0, help='Amount to move in attribute direction')
     parser.add_argument('--obs', action='store_true', help='Send frames to obs virtual cam')
     parser.add_argument('--mouth_mask', action='store_true', help='Retain target mouth')
+    parser.add_argument('--delay', type=int, default=0, help='delay time in milliseconds')
+    parser.add_argument('--fps_delay', action='store_true', help='show fps and delay time on top corner')
 
     return parser.parse_args()
 
@@ -92,12 +97,9 @@ def apply_color_transfer(source_path, target):
 
 # @line_profiler.profile
 def main():
-    # print("cuda_is_available: %s", torch.cuda.is_available())
-    # return
-    
+
     args = parse_arguments()
     model = load_model(args.modelPath)
-    
 
     cap = cv2.VideoCapture(0)  # Open webcam
     if not cap.isOpened():
@@ -109,9 +111,9 @@ def main():
     cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL)  # <--- This makes window resizable
 
     create_latent_flag = True
-    print("Press 'q' to quit.")
     prev_time = time.time()
-    print("Starting live face swap. Press 'q' to quit.")
+    buffer= deque()
+
     with pyvirtualcam.Camera(width=960, height=540, fps=20, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
         while True:
             ret, frame = cap.read()
@@ -162,18 +164,59 @@ def main():
                     )
 
                 # cv2.rectangle(final_frame,(int(x1),int(y1)), (int(x2),int(y2)), (255,0,0), 2)
-                if cam:
-                    output_img = cv2.resize(final_frame, (960, 540))
-                    cam.send(output_img)
-                    cam.sleep_until_next_frame()
-                else:
-                    cv2.imshow('Live Face Swap', cv2.resize(final_frame, (960, 540)))
+              
+                if args.fps_delay:
+                    # Overlay FPS
+                    cv2.putText(
+                        final_frame,
+                        f"FPS: {fps:.2f}",
+                        (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        (0, 255, 0),
+                        2,
+                        cv2.LINE_AA
+                    )
+                    # Overlay Delay
+                    cv2.putText(
+                        final_frame,
+                        f"Delay: {args.delay} ms",
+                        (10, 60),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        (0, 255, 0),
+                        2,
+                        cv2.LINE_AA
+                    )
+                buffer_end = time.time()
+                buffer.append((final_frame, buffer_end))
+                
+                if (buffer_end-buffer[0][1])*1000>= args.delay:
+                    if cam:
+                        final_frame = cv2.resize(buffer[0][0], (960, 540))
+                        cam.send(final_frame)
+                        cam.sleep_until_next_frame()
+                        buffer.popleft()
+
+                    else:
+                        cv2.imshow('Live Face Swap', cv2.resize(buffer[0][0], (960, 540)))
+                        buffer.popleft()
+                
             except Exception as e:
                 print(f"Swap error: {e}")
                 cv2.imshow('Live Face Swap', frame)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
                 break
+            elif key == ord('+') or key == ord('='):  # support both + and = on some keyboards
+                args.delay += 50
+                print(f"Delay increased to {args.delay} ms")
+            elif key == ord('-'):
+                args.delay = max(0, args.delay - 50)
+                print(f"Delay decreased to {args.delay} ms")
+
+
 
     cap.release()
     cv2.destroyAllWindows()
