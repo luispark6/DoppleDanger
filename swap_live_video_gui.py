@@ -269,15 +269,23 @@ class FaceSwapGUI:
         self.status_label.config(text="Ready to start", foreground="green")
     
     def monitor_process(self):
-        if self.process:
-            return_code = self.process.wait()
-            if self.is_running:  # Only update if we didn't manually stop
-                if return_code == 0:
-                    self.status_label.config(text="Face swap finished", foreground="green")
-                else:
-                    self.status_label.config(text="Face swap stopped with error", foreground="red")
-                self.reset_ui()
-    
+        # if self.process:
+        #     return_code = self.process.wait()
+        #     if self.is_running:  # Only update if we didn't manually stop
+        #         if return_code == 0:
+        #             self.status_label.config(text="Face swap finished", foreground="green")
+        #         else:
+        #             self.status_label.config(text="Face swap stopped with error", foreground="red")
+        #         self.reset_ui()
+        def read_stream(stream, label):
+            for line in iter(stream.readline, ''):
+                print(f"[{label}] {line.strip()}")
+
+        threading.Thread(target=read_stream, args=(self.process.stdout, "STDOUT"), daemon=True).start()
+        threading.Thread(target=read_stream, args=(self.process.stderr, "STDERR"), daemon=True).start()
+
+        self.process.wait()
+        self.reset_ui()
     def test_webcam(self):
         try:
             cap = cv2.VideoCapture(0)
