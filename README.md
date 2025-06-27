@@ -4,7 +4,12 @@ DoppleDanger utilizes live face swapping and live voice cloning as a hyper-reali
 
 In a way, this is an extension/improvement of the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The [ReSwapper repository](https://github.com/somanchiu/ReSwapper) is an attempt to replicate the face swapping model found in the  [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The reason why we simply don't just use the model from the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam) is because this model seems to have some GPU bottleneck that significantly increases inference time. This bottleneck results in the live swapping functionality to average at about 8-10 fps(RTX-3090) with only about 10-15 percent of the GPU being utilized. 
 
-Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps. 
+Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps.
+
+## Demo
+<video width="640" height="360" controls>
+  <source src="./media/demo.mp4" type="video/mp4">
+</video>
 
 ## Installation
 ### Platform
@@ -42,7 +47,7 @@ pip install numpy==1.26.4
 - If these are desired functionalities, please read the **Virtual Camera/Audio** section for more information 
 
 
-### After installation, you’ll need to modify the degradations.py file in your basicsr module.
+### After installation, you’ll need to modify the degradations.py file in your basicsr module only if you want to have converting video capabilties. This is NOT needed for the live face swap and voice cloning
 If using conda, you can typically find this file at:
 ```
 <your_env_path>/Lib/site-packages/basicsr/data/degradations.py
@@ -85,7 +90,7 @@ python real-time-gui.py
 ```
 
 GUI after running 'python real-time-gui.py
-![alt text](./png_files/seed_vc_gui.png "")
+![alt text](./media/seed_vc_gui.png "")
 
 - Use the settings above for best balance of performance and inference speed
 - Press Start Voice Conversion after inputting proper fields
@@ -115,7 +120,7 @@ To send the live face swaps to a video meeting, please follow the steps below:
 2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set)
 3. Go to the preferred video meeting platform (we will use google meets as an example)
 4. 
-![alt text](./png_files/googlemeets.png "")
+![alt text](./media/googlemeets.png "")
 Go to the camera settings, and pick ```OBS Virtual Camera```
 
 5. Your all set! The live face swap should be shown in the virtual meeting
@@ -127,13 +132,13 @@ To send the live voice cloning to a video meeting, please follow the steps below
 2. run ```cd seed_vc```
 3. run ```python real-time-gui.py```
 4. 
-![alt text](./png_files/seed_vc_gui.png "")
+![alt text](./media/seed_vc_gui.png "")
 **Set the Output Device** to **Cable Input (VB-Audio Virtual C)**
 
 5. Go to the preferred video meeting platform (we will use google meets as an example)
 
 6. 
-![alt text](./png_files/googlmeetsaudio.png "")
+![alt text](./media/googlmeetsaudio.png "")
 **Set the Audio Input** to **Cable Output (VB-Audio Virtual Cable)**
 
 7. You should be all set!
@@ -155,7 +160,7 @@ I have not yet tried this method so please send an issue if it does not work.
 #### Delay Time for Live Face Swap for Virtual Camera
 - To delay the Live Face Swap for synchronization with the voice cloning, run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs```, and an empty pop-up window will appear(it is empty because frames are being sent to the virtual camera). 
 
-![alt text](./png_files/empty_popup.png "")
+![alt text](./media/empty_popup.png "")
 
 - Then, click the empty window, and press either + or - to toggle the delay time by 50ms
 
