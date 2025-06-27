@@ -7,11 +7,6 @@ In a way, this is an extension/improvement of the [Deep-Live-Cam repository](htt
 Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps.
 
 ## Demo
-<video width="640" height="360" controls>
-  <source src="./media/demo.mp4" type="video/mp4">
-</video>
-
-
 https://github.com/user-attachments/assets/b8037473-0f2f-41c9-acbf-4ca0cbe7e5b9
 
 
