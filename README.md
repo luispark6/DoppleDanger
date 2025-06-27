@@ -13,6 +13,7 @@ https://github.com/user-attachments/assets/ee5bfd14-ea60-4fcf-9499-adc2f8ca1f02
 
 ## Installation
 ### Platform
+- Windows 
 - [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
 - python==3.10
 ### Clone and Dependencies
@@ -27,17 +28,19 @@ or
 conda create -n reswap python=3.10
 conda activate reswap
 
+
 pip install -r requirements.txt --no-deps
 
 pip install torch torchvision torchaudio --force --index-url https://download.pytorch.org/whl/cu121
+
 pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+
 pip install numpy==1.26.4
 ```
 ### Models
+- You must then install the GFPGAN model and place it in the ```DoppleDanger/models``` directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
 
-- You must then install the GFPGAN model and place it in the models directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
-
-- Finally, download one of the inswapper models found below in the **Pretrained Model** section and place it in the models directory as well.
+- Finally, download one of the inswapper models found below in the **Pretrained Model** section and place it in the ```DoppleDanger/models``` directory as well.
 
 - Note that these both should be .pth files
 
@@ -72,7 +75,7 @@ python .\swap_live_video.py --source <img>.png --modelPath /path/to/model
 | Argument                     | Type    | Required | Default | Description                                                                                                                |
 | ---------------------------- | ------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `--source`                   | `str`   | ✅ Yes    | —       | Path to the **source face image** (used for swapping onto webcam feed).                                                    |
-| `--modelPath`                | `str`   | ✅ Yes    | —       | Path to the **trained face swap model** file (e.g., `.pth` or `.onnx`).                                                    |
+| `--modelPath`                | `str`   | ✅ Yes    | —       | Path to the **trained face swap model** file (should be the ReSwapper .pth file, NOT the GFPGAN model).                                                    |
 | `--resolution`               | `int`   | ❌ No     | `128`   | Resolution (in pixels) to which detected faces will be cropped and resized before processing.                              |
 | `--face_attribute_direction` | `str`   | ❌ No     | `None`  | Path to a `.npy` file containing a **face attribute direction vector**, used to modify facial features (e.g., beard). |
 | `--face_attribute_steps`     | `float` | ❌ No     | `0.0`   | Amount to **move along the attribute direction**. Higher values apply stronger feature changes.                            |
@@ -83,14 +86,20 @@ python .\swap_live_video.py --source <img>.png --modelPath /path/to/model
 
 - During the livestream, you can increase or decrease delay time(50ms) by pressing plus(+) or minus(-) 
 
+## Live Face Swap GUI
+```
+python swap_live_video_gui
+```
+![alt text](./media/face_gui.png "")
+
 ## Live Voice Cloning
 ```
 cd seed_vc
 python real-time-gui.py
 ```
-
 GUI after running 'python real-time-gui.py
 ![alt text](./media/seed_vc_gui.png "")
+
 
 - **Notes about important setting values**:
   
@@ -107,9 +116,9 @@ python .\swap_video.py --source ..\<img>.png --target_video .\<video>.mp4 --mode
 
 ## Coordinating Live Face Swap and Voice Cloning
 1. First open two terminals, both running on the same virtual environment
-2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model``` on terminal 1
-3. Then run ```cd seed_vc``` and ```python real-time-gui.py```
-4. Pick the refrence audio, input/output device, and setting values, then press ```Start Voice Conversion```
+2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model``` or ```python swap_live_video_gui.py->Start Face Swap```on terminal 1
+3. Then on terminal 2, run ```cd seed_vc``` and ```python real-time-gui.py```
+4. Pick the reference audio, input/output device, and setting values, then press ```Start Voice Conversion```
 5. Now press on the live face-swap recording window (the window that popped up after running step 2) and press + or - to decrease or increase the delay time(50ms). Do this until the voice cloning synchronizes with the face swap
 
 NOTE: We have to synchronize because the voice cloning inference time is slower than the face swap inference time. So if we delay the face swap, they will then be synchronized. 
@@ -120,7 +129,7 @@ You can also stream the live face swap and the voice cloning to a video meeting 
 ### Virtual Camera
 To send the live face swaps to a video meeting, please follow the steps below:
 1. Download  [obs](https://obsproject.com/) (compatible for Windows, Mac, Linux)
-2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set)
+2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set) or ```python swap_live_video_gui.py```(pick OBS flag and press Start Face Swap)
 3. Go to the preferred video meeting platform (we will use google meets as an example)
 4. 
 ![alt text](./media/googlemeets.png "")
@@ -161,7 +170,7 @@ Input: Monitor of Virtual_Audio_Cable
 I have not yet tried this method so please send an issue if it does not work.
 
 #### Delay Time for Live Face Swap for Virtual Camera
-- To delay the Live Face Swap for synchronization with the voice cloning, run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs```, and an empty pop-up window will appear(it is empty because frames are being sent to the virtual camera). 
+- To delay the Live Face Swap for synchronization with the voice cloning, run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` or ```python swap_live_video_gui.py```(pick OBS flag and press Start Face Swap), and an empty pop-up window will appear(it is empty because frames are being sent to the virtual camera). 
 
 ![alt text](./media/empty_popup.png "")
 
