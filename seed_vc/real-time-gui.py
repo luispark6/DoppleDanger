@@ -914,7 +914,7 @@ if __name__ == "__main__":
             else:
                 self.resampler2 = None
             self.vad_cache = {}
-            self.vad_chunk_size = min(500, 1000 * self.gui_config.block_time)
+            self.vad_chunk_size = 1000 * self.gui_config.block_time
             self.vad_speech_detected = False
             self.set_speech_detected_false_at_end_flag = False
             self.start_stream()
