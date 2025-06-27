@@ -31,9 +31,9 @@ conda activate reswap
 
 pip install -r requirements.txt --no-deps
 
-pip install torch torchvision torchaudio --force --index-url https://download.pytorch.org/whl/cu121
+pip install torch==2.5.1+cu121 torchvision===0.20.1+cu121 torchaudio==2.5.1+cu121 --force --index-url https://download.pytorch.org/whl/cu121
 
-pip install onnxruntime-gpu --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install onnxruntime-gpu==1.22.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 
 pip install numpy==1.26.4
 ```
