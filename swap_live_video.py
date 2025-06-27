@@ -214,6 +214,8 @@ def main():
                 print(f"Delay increased to {args.delay} ms")
             elif key == ord('-'):
                 args.delay = max(0, args.delay - 50)
+                while (buffer_end - buffer[0][1])*1000>args.delay:
+                    buffer.popleft()
                 print(f"Delay decreased to {args.delay} ms")
 
 
