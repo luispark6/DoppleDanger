@@ -97,7 +97,7 @@ python swap_live_video_gui
 cd seed_vc
 python real-time-gui.py
 ```
-GUI after running 'python real-time-gui.py
+GUI after running 'python real-time-gui.py(Note use wav file as reference audio)
 ![alt text](./media/seed_vc_gui.png "")
 
 
