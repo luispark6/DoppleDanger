@@ -11,6 +11,10 @@ Using the ReSwapper model, the live swapping functionality now averages at aroun
   <source src="./media/demo.mp4" type="video/mp4">
 </video>
 
+
+https://github.com/user-attachments/assets/b8037473-0f2f-41c9-acbf-4ca0cbe7e5b9
+
+
 ## Installation
 ### Platform
 - [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
