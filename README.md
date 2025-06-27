@@ -91,7 +91,10 @@ python real-time-gui.py
 GUI after running 'python real-time-gui.py
 ![alt text](./media/seed_vc_gui.png "")
 
-- Use the settings above for best balance of performance and inference speed
+- **Notes about important setting values**:
+  
+- Toggle the settings above best for your GPU(I suggest a higher Inference cfg rate than 0.3, as Ingerence cfg rate determines how similar you want your voice to sound to the reference voice)
+- The only crucially important settings are the Diffusion Steps and Block Time. Make sure Diffusion Steps are between 5-15. If it is too high, inference time will be longer which will cause quite a delay. Furthermore, make sure the **Block Time** is HIGHER than the inference time as you can see in the bottom right. If at any point the inference time is lower than the Block Time, the voice cloning will start stuttering than crash!!(Note Block Time is in seconds, so simply multiply by 1000, then compare to inference time)
 - Press Start Voice Conversion after inputting proper fields
 
 
