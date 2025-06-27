@@ -6,7 +6,6 @@ tb_logger/*
 wandb/*
 tmp/*
 gfpgan/*
-models/*
 temp_results
 temp_results2
 version.py
