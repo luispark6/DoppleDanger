@@ -9,8 +9,7 @@ Using the ReSwapper model, the live swapping functionality now averages at aroun
 ## 🎬 Demo (Elon Musk as Reference)
 
 **🔗 Video Demo:**  
-https://github.com/user-attachments/assets/0e78c9c0-bac6-4019-8c4b-a55eda9c6dad
-
+https://github.com/user-attachments/assets/ee5bfd14-ea60-4fcf-9499-adc2f8ca1f02
 ---
 
 ### 🖼️ Reference Photo  
