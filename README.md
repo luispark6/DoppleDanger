@@ -6,9 +6,13 @@ In a way, this is an extension/improvement of the [Deep-Live-Cam repository](htt
 
 Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps.
 
-## 🎬 Demo (Elon Musk as Reference)
+## 🎬 Demo (Elon Musk as Reference)  
 
 **🔗 Video Demo:**  
+
+
+https://github.com/user-attachments/assets/2b6f9717-4665-49df-9b05-c7a4573f5557  
+
 
 ---
 
@@ -17,7 +21,10 @@ Using the ReSwapper model, the live swapping functionality now averages at aroun
 
 ---
 
-### 🔊 Reference Audio  
+### 🔊 Reference Audio
+https://github.com/user-attachments/assets/122ad8ba-7968-4ca7-a0b5-dde8b0f47f32  
+
+Note that reference audio should be a WAV file. Only using MP4 to show on README file.
 
 
 
