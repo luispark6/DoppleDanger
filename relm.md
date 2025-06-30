@@ -4,7 +4,8 @@ DoppleDanger utilizes live face swapping and live voice cloning as a hyper-reali
 
 In a way, this is an extension/improvement of the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The [ReSwapper repository](https://github.com/somanchiu/ReSwapper) is an attempt to replicate the face swapping model found in the  [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam). The reason why we simply don't just use the model from the [Deep-Live-Cam repository](https://github.com/hacksider/Deep-Live-Cam) is because this model seems to have some GPU bottleneck that significantly increases inference time. This bottleneck results in the live swapping functionality to average at about 8-10 fps(RTX-3090) with only about 10-15 percent of the GPU being utilized. 
 
-Using the ReSwapper model, the live swapping functionality now averages at around 17-20 fps.
+Using the ReSwapper model, the live swapping functionality now averages at around 20 fps on a RTX3090. If enhance resolution option is set to True, the live swapping averages at around 15-16 fps. 
+
 
 ## 🎬 Demo 
 
