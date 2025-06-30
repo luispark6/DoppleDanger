@@ -15,7 +15,6 @@ from contextlib import nullcontext
 from collections import deque
 
 
-
 # Setup face detector
 faceAnalysis = FaceAnalysis(name='buffalo_l')
 faceAnalysis.prepare(ctx_id=0, det_size=(512, 512))
@@ -31,7 +30,7 @@ def parse_arguments():
     parser.add_argument('--mouth_mask', action='store_true', help='Retain target mouth')
     parser.add_argument('--delay', type=int, default=0, help='delay time in milliseconds')
     parser.add_argument('--fps_delay', action='store_true', help='show fps and delay time on top corner')
-
+    parser.add_argument('--enhance_res', action='store_true', help='Increase webcam resolution to 1920x1080')
     return parser.parse_args()
 
 def get_device():
@@ -95,13 +94,15 @@ def apply_color_transfer(source_path, target):
     return cv2.cvtColor(np.clip(source, 0, 255).astype("uint8"), cv2.COLOR_LAB2BGR)
 
 
-# @line_profiler.profile
 def main():
 
     args = parse_arguments()
     model = load_model(args.modelPath)
 
     cap = cv2.VideoCapture(0)  # Open webcam
+    if args.enhance_res:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
@@ -119,6 +120,8 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 break
+            
+
             if create_latent_flag:
                 try:
                     source = apply_color_transfer(source_path=args.source, target= frame)
