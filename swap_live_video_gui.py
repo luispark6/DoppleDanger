@@ -24,7 +24,7 @@ class FaceSwapGUI:
         self.obs_enabled = tk.BooleanVar()
         self.mouth_mask = tk.BooleanVar()
         self.fps_delay = tk.BooleanVar()
-        
+        self.enhance_res = tk.BooleanVar()
         # Process tracking
         self.process = None
         self.is_running = False
@@ -52,6 +52,7 @@ class FaceSwapGUI:
         ttk.Entry(source_frame, textvariable=self.source_path, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(source_frame, text="Browse", command=self.browse_source).pack(side=tk.RIGHT, padx=(5, 0))
         
+
         # Model Path
         ttk.Label(req_frame, text="Model Path (.pth file):").pack(anchor=tk.W)
         model_frame = ttk.Frame(req_frame)
@@ -71,6 +72,7 @@ class FaceSwapGUI:
         res_spinbox.pack(side=tk.LEFT, padx=(10, 0))
         ttk.Label(res_frame, text="pixels (face crop size)").pack(side=tk.LEFT, padx=(5, 0))
         
+  
         # Delay
         delay_frame = ttk.Frame(basic_frame)
         delay_frame.pack(fill=tk.X, pady=(0, 5))
@@ -108,6 +110,8 @@ class FaceSwapGUI:
                        variable=self.mouth_mask).pack(anchor=tk.W, pady=2)
         ttk.Checkbutton(options_frame, text="Show FPS and Delay", 
                        variable=self.fps_delay).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(options_frame, text="Enhance Camera Resolution(Reccomended)", 
+                       variable=self.enhance_res).pack(anchor=tk.W, pady=2)
         
         # Control Buttons Frame
         control_frame = ttk.Frame(main_frame)
@@ -222,6 +226,8 @@ class FaceSwapGUI:
         
         if self.fps_delay.get():
             cmd.append("--fps_delay")
+        if self.enhance_res.get():
+            cmd.append("--enhance_res")
         
         return cmd
     
