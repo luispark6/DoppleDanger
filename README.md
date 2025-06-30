@@ -94,6 +94,7 @@ python .\swap_live_video.py --source <img>.png --modelPath /path/to/model
 | `--source`                   | `str`   | ✅ Yes    | —       | Path to the **source face image** (used for swapping onto webcam feed).                                                    |
 | `--modelPath`                | `str`   | ✅ Yes    | —       | Path to the **trained face swap model** file (should be the ReSwapper .pth file, NOT the GFPGAN model).                                                    |
 | `--resolution`               | `int`   | ❌ No     | `128`   | Resolution (in pixels) to which detected faces will be cropped and resized before processing.                              |
+| `--enhance_res`              | `flag`  | ❌ No (however recommended to set to `True`)| `False`| Increase webcam resolution to 1920x1080|
 | `--face_attribute_direction` | `str`   | ❌ No     | `None`  | Path to a `.npy` file containing a **face attribute direction vector**, used to modify facial features (e.g., beard). |
 | `--face_attribute_steps`     | `float` | ❌ No     | `0.0`   | Amount to **move along the attribute direction**. Higher values apply stronger feature changes.                            |
 | `--obs`                      | `flag`  | ❌ No     | `False` | If set, **sends frames to OBS virtual camera** (requires OBS virtual cam installed and active).                            |
