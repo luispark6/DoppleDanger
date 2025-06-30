@@ -110,7 +110,7 @@ class FaceSwapGUI:
                        variable=self.mouth_mask).pack(anchor=tk.W, pady=2)
         ttk.Checkbutton(options_frame, text="Show FPS and Delay", 
                        variable=self.fps_delay).pack(anchor=tk.W, pady=2)
-        ttk.Checkbutton(options_frame, text="Enhance Camera Resolution(Reccomended)", 
+        ttk.Checkbutton(options_frame, text="Enhance Camera Resolution(Recommended)", 
                        variable=self.enhance_res).pack(anchor=tk.W, pady=2)
         
         # Control Buttons Frame
