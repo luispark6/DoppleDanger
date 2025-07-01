@@ -13,6 +13,7 @@ import pyvirtualcam
 from pyvirtualcam import PixelFormat
 from contextlib import nullcontext
 from collections import deque
+import traceback
 
 
 # Setup face detector
@@ -95,10 +96,8 @@ def apply_color_transfer(source_path, target):
 
 
 def main():
-
     args = parse_arguments()
     model = load_model(args.modelPath)
-
     cap = cv2.VideoCapture(0)  # Open webcam
     if args.enhance_res:
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
@@ -202,12 +201,13 @@ def main():
                         buffer.popleft()
 
                     else:
-                        cv2.imshow('Live Face Swap', cv2.resize(buffer[0][0], (960, 540)))
+                        cv2.imshow('Live Face Swap', cv2.resize(buffer[0][0], None, fx=2.0, fy=2.0))
                         buffer.popleft()
                 
             except Exception as e:
                 print(f"Swap error: {e}")
                 cv2.imshow('Live Face Swap', frame)
+                traceback.print_exc()
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
