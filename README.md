@@ -9,11 +9,16 @@ Using the ReSwapper model, the live swapping functionality now averages at aroun
 
 ## 🎬 Demo 
 
-**🔗 Video Demo:**  
+**🔗 Video Demo(High Resolution):**  
+
+https://github.com/user-attachments/assets/68203de5-6e89-4fe4-aba1-4067d199c78c
 
 
-https://github.com/user-attachments/assets/7f1f811d-51af-4c36-b50c-c2eb25669131
+**🔗 Video Demo(Low Resolution):**  
 
+
+
+https://github.com/user-attachments/assets/de93187e-3b75-44b4-b270-ef8ae0571062
 
 
 ---
