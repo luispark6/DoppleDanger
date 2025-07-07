@@ -2,7 +2,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from modules.commons import sequence_mask
+from seed_vc.modules.commons import sequence_mask
 import numpy as np
 
 # f0_bin = 256

@@ -16,6 +16,9 @@ __pycache__/
 *$py.class
 # C extensions
 *.so
+checkpoints/
+/configs/inuse/
+
 
 # Distribution / packaging
 .Python

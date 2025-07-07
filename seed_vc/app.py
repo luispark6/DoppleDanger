@@ -2,7 +2,7 @@ import gradio as gr
 import torch
 import yaml
 import argparse
-from modules.commons import str2bool
+from seed_vc.modules.commons import str2bool
 
 # Set up device and torch configurations
 if torch.cuda.is_available():

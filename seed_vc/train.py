@@ -13,7 +13,7 @@ import glob
 from tqdm import tqdm
 import shutil
 
-from modules.commons import recursive_munch, build_model, load_checkpoint
+from seed_vc.modules.commons import recursive_munch, build_model, load_checkpoint
 from optimizers import build_optimizer
 from data.ft_dataset import build_ft_dataloader
 from hf_utils import load_custom_model_from_hf
@@ -118,7 +118,7 @@ class Trainer:
             print("Failed to load any checkpoint, training from scratch.")
 
     def build_sv_model(self, device, config):
-        from modules.campplus.DTDNN import CAMPPlus
+        from seed_vc.modules.campplus.DTDNN import CAMPPlus
         self.campplus_model = CAMPPlus(feat_dim=80, embedding_size=192)
         campplus_sd_path = load_custom_model_from_hf("funasr/campplus", "campplus_cn_common.bin", config_filename=None)
         campplus_sd = torch.load(campplus_sd_path, map_location='cpu')
@@ -128,13 +128,13 @@ class Trainer:
         self.sv_fn = self.campplus_model
 
     def build_f0_fn(self, device, config):
-        from modules.rmvpe import RMVPE
+        from seed_vc.modules.rmvpe import RMVPE
         model_path = load_custom_model_from_hf("lj1995/VoiceConversionWebUI", "rmvpe.pt", None)
         self.rmvpe = RMVPE(model_path, is_half=False, device=device)
         self.f0_fn = self.rmvpe
 
     def build_converter(self, device, config):
-        from modules.openvoice.api import ToneColorConverter
+        from seed_vc.modules.openvoice.api import ToneColorConverter
         ckpt_converter, config_converter = load_custom_model_from_hf("myshell-ai/OpenVoiceV2", "converter/checkpoint.pth", "converter/config.json")
         self.tone_color_converter = ToneColorConverter(config_converter, device=device)
         self.tone_color_converter.load_ckpt(ckpt_converter)
@@ -146,14 +146,14 @@ class Trainer:
         vocoder_type = config['model_params']['vocoder']['type']
         vocoder_name = config['model_params']['vocoder'].get('name', None)
         if vocoder_type == 'bigvgan':
-            from modules.bigvgan import bigvgan
+            from seed_vc.modules.bigvgan import bigvgan
             self.bigvgan_model = bigvgan.BigVGAN.from_pretrained(vocoder_name, use_cuda_kernel=False)
             self.bigvgan_model.remove_weight_norm()
             self.bigvgan_model = self.bigvgan_model.eval().to(device)
             vocoder_fn = self.bigvgan_model
         elif vocoder_type == 'hifigan':
-            from modules.hifigan.generator import HiFTGenerator
-            from modules.hifigan.f0_predictor import ConvRNNF0Predictor
+            from seed_vc.modules.hifigan.generator import HiFTGenerator
+            from seed_vc.modules.hifigan.f0_predictor import ConvRNNF0Predictor
             hift_config = yaml.safe_load(open('configs/hifigan.yml', 'r'))
             hift_path = load_custom_model_from_hf("FunAudioLLM/CosyVoice-300M", 'hift.pt', None)
             self.hift_gen = HiFTGenerator(**hift_config['hift'],
