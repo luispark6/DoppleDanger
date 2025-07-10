@@ -40,17 +40,18 @@ Note that reference audio should be a WAV file. Only using MP4 to show on README
 - Windows 
 - [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
 - python==3.10
+- Nvidia Driver Version >= 525.xx 
 ### Clone and Dependencies
 
 ```bash
 git clone git@github.com:luispark6/DoppleDanger.git
-cd ReSwapper
+cd DoppleDanger
 
 python -m venv venv
 venv\scripts\activate
 or
-conda create -n reswap python=3.10
-conda activate reswap
+conda create -n doppledanger python=3.10
+conda activate doppledanger
 
 
 pip install -r requirements.txt --no-deps
@@ -60,6 +61,8 @@ pip install torch==2.5.1+cu121 torchvision===0.20.1+cu121 torchaudio==2.5.1+cu12
 pip install onnxruntime-gpu==1.22.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 
 pip install numpy==1.26.4
+
+**Ignore Dependency Warnings
 ```
 ### Models
 - You must then install the GFPGAN model and place it in the ```DoppleDanger/models``` directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
@@ -92,7 +95,73 @@ Simply change this line to the following:
 from torchvision.transforms.functional import rgb_to_grayscale
 ```
 
-## Live Face Swap 
+
+## Live Face Swap and Voice Cloning GUI
+
+```
+python unified_gui.py
+```
+![alt text](./media/unified_gui.png "")
+
+### Quick Start
+#### Voice Cloning 
+1. Choose Reference Audio: the voice of which you would like to clone
+2. Properly Select the Input and Output Devices
+3. Press "Start Voice Conversion"
+
+#### Face Swapping
+1. Choose Souce Face Image: the face of which you would like to clone
+2. Choose Model File: the ReSwapper model placed in the models directory
+3. Press "Face Swap" 
+
+***Note that you are able to run both Voice Cloning and Face Swapping simultaneously***
+
+
+### 🎤 Voice Cloning Settings
+| Setting                      | Description                                                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Choose Reference Audio**\* | Opens a file dialog to select the reference audio clip that will be used for cloning the voice.                  |
+| **Select a Host API**        | Lets you choose the audio backend, e.g., MME, WASAPI, etc., depending on your system's configuration.            |
+| **WASAPI**                   | If checked, enables the WASAPI host API explicitly.                                                              |
+| **Select Input Device**      | Choose the microphone or input audio device to use for capturing voice.                                          |
+| **Select Output Device**     | Choose the output device (e.g., speakers, virtual cable) where the audio will be played.                         |
+| **Reload Devices**           | Refreshes the list of input/output devices in case new ones were added.                                          |
+| **Use Model SR**             | Enables the use of a pre-trained model for Super Resolution (SR) audio enhancement.                              |
+| **Use Device SR**            | Uses SR capabilities of the audio device (if available) instead of a model.                                      |
+| **Diffusion Steps**          | Sets how many steps are used during voice generation. More steps generally yield higher quality but take longer. |
+| **Inference CFG Rate**       | Controls how strongly the model follows the conditioning reference. Higher values = closer mimicry.              |
+| **Max Prompt Length**        | Sets the maximum length (in seconds) of the reference audio used for conditioning.                               |
+| **Block Time**               | Sets how long each block of audio is processed. Lower values reduce latency.                                     |
+| **Crossfade Length**         | Duration (in seconds) of audio overlap for smoothing between blocks.                                             |
+| **Extra DiT Context (left)** | Extra context in seconds given to the left of the current audio block for the DiT model.                         |
+| **Extra CE Context (left)**  | Additional left-side context passed to the CE model for improved synthesis.                                      |
+| **Extra CE Context (right)** | Additional right-side context passed to the CE model. Helps in smoother transitions.                             |
+| **Start Voice Conversion**   | Begins real-time voice conversion using the selected settings.                                                   |
+| **Stop Voice Conversion**    | Stops the voice conversion process.                                                                              |
+| **Inference Time**           | Shows how long each inference takes (useful for performance tuning).                                             |
+
+
+### 🧑‍🦲 Face Swapping Settings
+| Setting                        | Description                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Choose Source Face Image**\* | Upload an image of the face you want to use as the source (e.g., a celebrity or character).             |
+| **Choose Model File**\*        | Reswapper Model in the ./models folder                                                         |
+| **Face Resolution (px)**       | Sets the resolution of the face image used for swapping. Common values: 128, 256, etc.                  |
+| **Delay (ms)**                 | Adds a delay to the processing stream. Can help sync face swap with audio/video.                        |
+| **Enable OBS Virtual Camera**  | Enables output through OBS’s virtual camera for real-time streaming.                                    |
+| **Show FPS and Delay**         | Displays real-time performance metrics like frames per second and processing delay.                     |
+| **Retain Target Mouth**        | Keeps the mouth of the target face instead of replacing it from the source image. |
+| **Enhance Camera Resolution**  | Increases resolution of the output camera feed for sharper results.                                     |
+| **Start Face Swap**            | Begins real-time face swapping using the selected image and model.                                      |
+| **Stop Face Swap**             | Ends the face swapping process.                                                                         |
+
+
+## Synchronizing Live Voice Clone and Face Swap
+The voice cloning model has a slightly longer inference time compared to the face swapping model, resulting in a noticeable timing mismatch between the generated audio and the lip movements in the video. To get these models in sync, you have to delay the face swapping by a bit. When you press ```Start Face Swap```, a live cam of the face swap and a slider should pop up. The slider will delay the live cam by some millisecond amount. Please adjust accordingly until the face swap and voice cloning is in sync. 
+
+![alt text](./media/slider.png "")
+
+## Live Face Swap Command Line
 ```
 python .\swap_live_video.py --source <img>.png --modelPath /path/to/model 
 ```
@@ -109,28 +178,6 @@ python .\swap_live_video.py --source <img>.png --modelPath /path/to/model
 | `--delay`                    | `int`   | ❌ No     | `0`     | Time delay in milliseconds to apply to the livestream. Useful for synchronizing the face swap video with voice cloning or other audio sources during a live stream|
 | `--fps_delay`                | `flag`  | ❌ No     | `False` | If set, **displays FPS and delay time** on the top corner of the output video.                                             |
 
-- During the livestream, you can increase or decrease delay time(50ms) by pressing plus(+) or minus(-) 
-
-## Live Face Swap GUI
-```
-python swap_live_video_gui
-```
-![alt text](./media/face_gui.png "")
-
-## Live Voice Cloning
-```
-cd seed_vc
-python real-time-gui.py
-```
-GUI after running 'python real-time-gui.py(Note use wav file as reference audio)
-![alt text](./media/seed_vc_gui.png "")
-
-
-- **Notes about important setting values**:
-  
-- Toggle the settings above best for your GPU(I suggest a higher Inference cfg rate than 0.3, as Ingerence cfg rate determines how similar you want your voice to sound to the reference voice)
-- The only crucially important settings are the Diffusion Steps and Block Time. Make sure Diffusion Steps are between 5-15. If it is too high, inference time will be longer which will cause quite a delay. Furthermore, make sure the **Block Time** is HIGHER than the inference time as you can see in the bottom right. If at any point the inference time is lower than the Block Time, the voice cloning will start stuttering than crash!!(Note Block Time is in seconds, so simply multiply by 1000, then compare to inference time)
-- Press Start Voice Conversion after inputting proper fields
 
 
 ## Quick Use of Converting Video(Optional for high quality face cloning using recorded video)
@@ -139,14 +186,6 @@ python .\swap_video.py --source ..\<img>.png --target_video .\<video>.mp4 --mode
 ```
 
 
-## Coordinating Live Face Swap and Voice Cloning
-1. First open two terminals, both running on the same virtual environment
-2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model``` or ```python swap_live_video_gui.py->Start Face Swap```on terminal 1
-3. Then on terminal 2, run ```cd seed_vc``` and ```python real-time-gui.py```
-4. Pick the reference audio, input/output device, and setting values, then press ```Start Voice Conversion```
-5. Now press on the live face-swap recording window (the window that popped up after running step 2) and press + or - to decrease or increase the delay time(50ms). Do this until the voice cloning synchronizes with the face swap
-
-NOTE: We have to synchronize because the voice cloning inference time is slower than the face swap inference time. So if we delay the face swap, they will then be synchronized. 
 
 ## Virtual Camera/Audio
 You can also stream the live face swap and the voice cloning to a video meeting such as Zoom, Google Meets, Microsoft Teams Meeting, etc.. 
@@ -154,7 +193,7 @@ You can also stream the live face swap and the voice cloning to a video meeting 
 ### Virtual Camera
 To send the live face swaps to a video meeting, please follow the steps below:
 1. Download  [obs](https://obsproject.com/) (compatible for Windows, Mac, Linux)
-2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set) or ```python swap_live_video_gui.py```(pick OBS flag and press Start Face Swap)
+2. Run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` (obs flag MUST be set) or ```python unified_gui.py```(pick OBS flag and press Start Face Swap)
 3. Go to the preferred video meeting platform (we will use google meets as an example)
 4. 
 ![alt text](./media/googlemeets.png "")
@@ -164,42 +203,22 @@ Go to the camera settings, and pick ```OBS Virtual Camera```
 
 ### Virtual Audio
 To send the live voice cloning to a video meeting, please follow the steps below:
-#### Windows:
 1. Download [VB-Audio](https://vb-audio.com/Cable/)
-2. run ```cd seed_vc```
-3. run ```python real-time-gui.py```
-4. 
-![alt text](./media/seed_vc_gui.png "")
+2. run ```python unified_gui.py```
+3. 
+![alt text](./media/virtual_audio.png "")  
 **Set the Output Device** to **Cable Input (VB-Audio Virtual C)**
 
-5. Go to the preferred video meeting platform (we will use google meets as an example)
+4. Go to the preferred video meeting platform (we will use google meets as an example)
 
-6. 
+5. 
 ![alt text](./media/googlmeetsaudio.png "")
 **Set the Audio Input** to **Cable Output (VB-Audio Virtual Cable)**
 
-7. You should be all set!
+6. You should be all set!
 
-#### Linux
-1. run ```sudo apt install pulseaudio pavucontrol```
-2. run ```pavucontrol```
-3. run ```pactl load-module module-null-sink sink_name=VirtualSink sink_properties=device.description=Virtual_Audio_Cable```   
-This creates Virtual Output:  
-Output:Virtual_Audio_Cable
-Input: Monitor of Virtual_Audio_Cable
-4. run ```python real-time-gui.py```
-5. In the gui, pick **Virtual_Audio_Cable** as the output
-6. In the virtual meeting platform, go under Microphone and choose **Monitor of Virtual_Audio_Cable** as the input
-7. You show be alls set!
 
-I have not yet tried this method so please send an issue if it does not work.
 
-#### Delay Time for Live Face Swap for Virtual Camera
-- To delay the Live Face Swap for synchronization with the voice cloning, run ```python .\swap_live_video.py --source <img>.png --modelPath /path/to/model --obs``` or ```python swap_live_video_gui.py```(pick OBS flag and press Start Face Swap), and an empty pop-up window will appear(it is empty because frames are being sent to the virtual camera). 
-
-![alt text](./media/empty_popup.png "")
-
-- Then, click the empty window, and press either + or - to toggle the delay time by 50ms
 
 
 
