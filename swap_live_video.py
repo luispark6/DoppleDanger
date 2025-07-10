@@ -108,7 +108,11 @@ def main():
     fps=0
     fps_update_interval = 0.5
     frame_count = 0
-    cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL)  # <--- This makes window resizable
+    cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL) 
+    cv2.namedWindow('Delay Control')
+    cv2.createTrackbar('Delay (ms)', 'Delay Control', args.delay, 10000, lambda x: None)
+    cv2.resizeWindow('Delay Control', 500, 2)  # Optional initial size
+
 
     create_latent_flag = True
     prev_time = time.time()
@@ -119,7 +123,19 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 break
-            
+
+
+            # Reopen delay control window if closed
+            if cv2.getWindowProperty('Delay Control', cv2.WND_PROP_VISIBLE) < 1:
+                cv2.namedWindow('Delay Control')
+                cv2.createTrackbar('Delay (ms)', 'Delay Control', args.delay, 10000, lambda x: None)
+                cv2.resizeWindow('Delay Control', 500, 2)
+                
+
+            if cv2.getWindowProperty('Live Face Swap', cv2.WND_PROP_VISIBLE) < 1:
+                cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL)
+
+                        
 
             if create_latent_flag:
                 try:
@@ -138,7 +154,7 @@ def main():
                 fps = frame_count / (current_time - prev_time)
                 frame_count = 0
                 prev_time = current_time
-            print(fps)
+            # print(fps)
 
             faces = faceAnalysis.get(frame)
             if len(faces) == 0:
@@ -190,6 +206,12 @@ def main():
                         2,
                         cv2.LINE_AA
                     )
+
+
+                prev_delay = args.delay
+                args.delay = cv2.getTrackbarPos('Delay (ms)', 'Delay Control')
+
+
                 buffer_end = time.time()
                 buffer.append((final_frame, buffer_end))
                 
@@ -215,8 +237,12 @@ def main():
             elif key == ord('+') or key == ord('='):  # support both + and = on some keyboards
                 args.delay += 50
                 print(f"Delay increased to {args.delay} ms")
-            elif key == ord('-'):
-                args.delay = max(0, args.delay - 50)
+                cv2.setTrackbarPos('Delay (ms)', "Delay Control", args.delay)
+
+            elif key == ord('-') or prev_delay>args.delay:
+                if key==ord('-'):
+                    args.delay = max(0, args.delay - 50)
+                    cv2.setTrackbarPos('Delay (ms)', "Delay Control", args.delay)
                 while (buffer_end - buffer[0][1])*1000>args.delay:
                     buffer.popleft()
                 print(f"Delay decreased to {args.delay} ms")

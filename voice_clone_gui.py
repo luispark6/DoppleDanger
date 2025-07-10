@@ -397,7 +397,7 @@ if __name__ == "__main__":
             self.model_set = load_models(args)
             from funasr import AutoModel
             self.vad_model = AutoModel(model="fsmn-vad", model_revision="v2.0.4")
-            self.update_devices()
+            self.update_devices() #hostapi, input/output devices, and indices now exist
             self.launcher()
 
         def load(self):
@@ -459,234 +459,92 @@ if __name__ == "__main__":
         def launcher(self):
             self.config = Config()
             data = self.load()
-            sg.theme("LightBlue3")
-            layout = [
-                [
-                    sg.Frame(
-                        title="Load reference audio",
-                        layout=[
-                            [
-                                sg.Input(
-                                    default_text=data.get("reference_audio_path", ""),
-                                    key="reference_audio_path",
-                                ),
-                                sg.FileBrowse(
-                                    "choose an audio file",
-                                    initial_folder=os.path.join(
-                                        os.getcwd(), "examples/reference"
-                                    ),
-                                    file_types=[
-                                        ("WAV Files", "*.wav"),
-                                        ("MP3 Files", "*.mp3"),
-                                        ("FLAC Files", "*.flac"),
-                                        ("M4A Files", "*.m4a"),
-                                        ("OGG Files", "*.ogg"),
-                                        ("Opus Files", "*.opus"),
-                                    ],
-                                ),
-                            ],
-                        ],
-                    )
-                ],
-                [
-                    sg.Frame(
-                        layout=[
-                            [
-                                sg.Text("Device type"),
-                                sg.Combo(
-                                    self.hostapis,
-                                    key="sg_hostapi",
-                                    default_value=data.get("sg_hostapi", ""),
-                                    enable_events=True,
-                                    size=(20, 1),
-                                ),
-                                sg.Checkbox(
-                                    "WASAPI Exclusive Device",
-                                    key="sg_wasapi_exclusive",
-                                    default=data.get("sg_wasapi_exclusive", False),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Input Device"),
-                                sg.Combo(
-                                    self.input_devices,
-                                    key="sg_input_device",
-                                    default_value=data.get("sg_input_device", ""),
-                                    enable_events=True,
-                                    size=(45, 1),
-                                ),
-                            ],
-                            [
-                                sg.Text("Output Device"),
-                                sg.Combo(
-                                    self.output_devices,
-                                    key="sg_output_device",
-                                    default_value=data.get("sg_output_device", ""),
-                                    enable_events=True,
-                                    size=(45, 1),
-                                ),
-                            ],
-                            [
-                                sg.Button("Reload devices", key="reload_devices"),
-                                sg.Radio(
-                                    "Use model sampling rate",
-                                    "sr_type",
-                                    key="sr_model",
-                                    default=data.get("sr_model", True),
-                                    enable_events=True,
-                                ),
-                                sg.Radio(
-                                    "Use device sampling rate",
-                                    "sr_type",
-                                    key="sr_device",
-                                    default=data.get("sr_device", False),
-                                    enable_events=True,
-                                ),
-                                sg.Text("Sampling rate:"),
-                                sg.Text("", key="sr_stream"),
-                            ],
-                        ],
-                        title="Sound Device",
-                    )
-                ],
-                [
-                    sg.Frame(
-                        layout=[
-                            # [
-                            #     sg.Text("Activation threshold"),
-                            #     sg.Slider(
-                            #         range=(-60, 0),
-                            #         key="threhold",
-                            #         resolution=1,
-                            #         orientation="h",
-                            #         default_value=data.get("threhold", -60),
-                            #         enable_events=True,
-                            #     ),
-                            # ],
-                            [
-                                sg.Text("Diffusion steps"),
-                                sg.Slider(
-                                    range=(1, 30),
-                                    key="diffusion_steps",
-                                    resolution=1,
-                                    orientation="h",
-                                    default_value=data.get("diffusion_steps", 10),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Inference cfg rate"),
-                                sg.Slider(
-                                    range=(0.0, 1.0),
-                                    key="inference_cfg_rate",
-                                    resolution=0.1,
-                                    orientation="h",
-                                    default_value=data.get("inference_cfg_rate", 0.7),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Max prompt length (s)"),
-                                sg.Slider(
-                                    range=(1.0, 20.0),
-                                    key="max_prompt_length",
-                                    resolution=0.5,
-                                    orientation="h",
-                                    default_value=data.get("max_prompt_length", 3.0),
-                                    enable_events=True,
-                                ),
-                            ],
-                        ],
-                        title="Regular settings",
-                    ),
-                    sg.Frame(
-                        layout=[
-                            [
-                                sg.Text("Block time"),
-                                sg.Slider(
-                                    range=(0.04, 3.0),
-                                    key="block_time",
-                                    resolution=0.02,
-                                    orientation="h",
-                                    default_value=data.get("block_time", 1.0),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Crossfade length"),
-                                sg.Slider(
-                                    range=(0.02, 0.5),
-                                    key="crossfade_length",
-                                    resolution=0.02,
-                                    orientation="h",
-                                    default_value=data.get("crossfade_length", 0.1),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Extra content encoder context time (left)"),
-                                sg.Slider(
-                                    range=(0.5, 10.0),
-                                    key="extra_time_ce",
-                                    resolution=0.1,
-                                    orientation="h",
-                                    default_value=data.get("extra_time_ce", 5.0),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Extra DiT context time (left)"),
-                                sg.Slider(
-                                    range=(0.5, 10.0),
-                                    key="extra_time",
-                                    resolution=0.1,
-                                    orientation="h",
-                                    default_value=data.get("extra_time", 5.0),
-                                    enable_events=True,
-                                ),
-                            ],
-                            [
-                                sg.Text("Extra context time (right)"),
-                                sg.Slider(
-                                    range=(0.02, 10.0),
-                                    key="extra_time_right",
-                                    resolution=0.02,
-                                    orientation="h",
-                                    default_value=data.get("extra_time_right", 2.0),
-                                    enable_events=True,
-                                ),
-                            ],
-                        ],
-                        title="Performance settings",
-                    ),
-                ],
-                [
-                    sg.Button("Start Voice Conversion", key="start_vc"),
-                    sg.Button("Stop Voice Conversion", key="stop_vc"),
-                    sg.Radio(
-                        "Input listening",
-                        "function",
-                        key="im",
-                        default=False,
-                        enable_events=True,
-                    ),
-                    sg.Radio(
-                        "Voice Conversion",
-                        "function",
-                        key="vc",
-                        default=True,
-                        enable_events=True,
-                    ),
-                    sg.Text("Algorithm delay (ms):"),
-                    sg.Text("0", key="delay_time"),
-                    sg.Text("Inference time (ms):"),
-                    sg.Text("0", key="infer_time"),
-                ],
-            ]
-            self.window = sg.Window("Seed-VC - GUI", layout=layout, finalize=True)
-            self.event_handler()
 
+            # Updated futuristic theme with softer, more modern visuals
+            sg.LOOK_AND_FEEL_TABLE['SoftFuturisticDark'] = {
+                'BACKGROUND': '#121212',
+                'TEXT': '#E0E0E0',
+                'INPUT': '#1F1F1F',
+                'TEXT_INPUT': '#E0E0E0',
+                'SCROLL': '#505050',
+                'BUTTON': ('#E0E0E0', '#2D2D2D'),
+                'PROGRESS': ('#3FC1C9', '#D0D0D0'),
+                'BORDER': 0,
+                'SLIDER_DEPTH': 0,
+                'PROGRESS_DEPTH': 0,
+            }
+            sg.theme('SoftFuturisticDark')
+
+            # Softer, rounded frame
+            def frame(title, layout):
+                return sg.Frame(
+                    title, layout,
+                    font=("Segoe UI", 10, 'bold'),
+                    border_width=0,
+                    pad=(10, 10),
+                    title_color='#00CFFF',
+                    relief=sg.RELIEF_FLAT,
+                    element_justification='left'
+                )
+
+            layout = [
+                [frame("🎧 Load Reference Audio", [
+                    [sg.Input(default_text=data.get("reference_audio_path", ""),
+                            key="reference_audio_path", size=(45, 1)),
+                    sg.FileBrowse("Browse", file_types=[("Audio Files", "*.wav *.mp3 *.flac *.m4a *.ogg *.opus")],
+                                initial_folder=os.path.join(os.getcwd(), "examples/reference"))]
+                ])],
+
+                [frame("🎛️ Sound Device Settings", [
+                    [sg.Text("Host API"), sg.Combo(self.hostapis, key="sg_hostapi",
+                                                default_value=data.get("sg_hostapi", ""), size=(25, 1), enable_events=True)],
+                    [sg.Checkbox("WASAPI Exclusive", key="sg_wasapi_exclusive",
+                                default=data.get("sg_wasapi_exclusive", False), enable_events=True)],
+                    [sg.Text("🎙️ Input Device"), sg.Combo(self.input_devices, key="sg_input_device",
+                                                        default_value=data.get("sg_input_device", ""), size=(60, 1), enable_events=True)],
+                    [sg.Text("🔊 Output Device"), sg.Combo(self.output_devices, key="sg_output_device",
+                                                        default_value=data.get("sg_output_device", ""), size=(60, 1), enable_events=True)],
+                    [sg.Button("🔄 Reload Devices", key="reload_devices", button_color=('#FFFFFF', '#2A9DF4'))],
+                    [sg.Radio("Use Model SR", "sr_type", key="sr_model", default=data.get("sr_model", True)),
+                    sg.Radio("Use Device SR", "sr_type", key="sr_device", default=data.get("sr_device", False)),
+                    sg.Text("SR:"), sg.Text("", key="sr_stream")]
+                ])],
+
+                [frame("⚙️ Regular Settings", [
+                    [sg.Text("Diffusion Steps"), sg.Slider(range=(1, 30), resolution=1, orientation='h',
+                                                        key="diffusion_steps", default_value=data.get("diffusion_steps", 10), enable_events=True)],
+                    [sg.Text("Inference CFG Rate"), sg.Slider(range=(0.0, 1.0), resolution=0.1, orientation='h',
+                                                            key="inference_cfg_rate", default_value=data.get("inference_cfg_rate", 0.7), enable_events=True)],
+                    [sg.Text("Max Prompt Length (s)"), sg.Slider(range=(1.0, 20.0), resolution=0.5, orientation='h',
+                                                                key="max_prompt_length", default_value=data.get("max_prompt_length", 3.0), enable_events=True)],
+                ])],
+
+                [frame("🚀 Performance Settings", [
+                    [sg.Text("Block Time"), sg.Slider(range=(0.04, 3.0), resolution=0.02, orientation='h',
+                                                    key="block_time", default_value=data.get("block_time", 1.0), enable_events=True)],
+                    [sg.Text("Crossfade Length"), sg.Slider(range=(0.02, 0.5), resolution=0.02, orientation='h',
+                                                            key="crossfade_length", default_value=data.get("crossfade_length", 0.1), enable_events=True)],
+                    [sg.Text("Extra CE Context (left)"), sg.Slider(range=(0.5, 10.0), resolution=0.1, orientation='h',
+                                                                key="extra_time_ce", default_value=data.get("extra_time_ce", 5.0), enable_events=True)],
+                    [sg.Text("Extra DiT Context (left)"), sg.Slider(range=(0.5, 10.0), resolution=0.1, orientation='h',
+                                                                    key="extra_time", default_value=data.get("extra_time", 5.0), enable_events=True)],
+                    [sg.Text("Extra Context (right)"), sg.Slider(range=(0.02, 10.0), resolution=0.02, orientation='h',
+                                                                key="extra_time_right", default_value=data.get("extra_time_right", 2.0), enable_events=True)],
+                ])],
+
+                [sg.Column([
+                    [sg.Button("🚀 Start Voice Conversion", key="start_vc", button_color=('#FFFFFF', '#228B22')),
+                    sg.Button("⛔ Stop", key="stop_vc", button_color=('#FFFFFF', '#B22222'))],
+                    [sg.Radio("🎧 Input Listening", "function", key="im", default=False, enable_events=True),
+                    sg.Radio("🗣️ Voice Conversion", "function", key="vc", default=True, enable_events=True)],
+                    [sg.Text("🕒 Algorithm Delay (ms):"), sg.Text("0", key="delay_time"),
+                    sg.Text("⚡ Inference Time (ms):"), sg.Text("0", key="infer_time")],
+                ], pad=(10, 20))]
+            ]
+
+            self.window = sg.Window("Seed-VC - Voice Conversion UI", layout=layout,
+                                    finalize=True, font=("Segoe UI", 10), element_justification='center')
+            self.event_handler()
         def event_handler(self):
             global flag_vc
             while True:
@@ -697,6 +555,8 @@ if __name__ == "__main__":
                 if event == "reload_devices" or event == "sg_hostapi":
                     self.gui_config.sg_hostapi = values["sg_hostapi"]
                     self.update_devices(hostapi_name=values["sg_hostapi"])
+
+                    #i think you dont need any logic from below.
                     if self.gui_config.sg_hostapi not in self.hostapis:
                         self.gui_config.sg_hostapi = self.hostapis[0]
                     self.window["sg_hostapi"].Update(values=self.hostapis)
