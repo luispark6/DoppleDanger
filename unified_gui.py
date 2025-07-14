@@ -349,9 +349,9 @@ if __name__ == "__main__":
     import torch.nn.functional as F
     import torchaudio.transforms as tat
     from PyQt6.QtWidgets import (
-        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
         QLabel, QPushButton, QSlider, QComboBox, QCheckBox,  QLineEdit,
-        QFileDialog, QMessageBox, QFrame, QMessageBox, QListView, QGraphicsDropShadowEffect
+        QFileDialog, QMessageBox, QFrame, QMessageBox, QListView, QGraphicsDropShadowEffect, QTabWidget, QGridLayout
     )
     from PyQt6.QtCore import Qt
     from PyQt6.QtGui import QColor, QIntValidator
@@ -659,10 +659,13 @@ if __name__ == "__main__":
             self.max_prompt_length: float = 3
     class MainWindow(QMainWindow):
         def __init__(self, args):
+            
             super().__init__()
 
             self.setWindowTitle("DoppleDanger")
             self.setMinimumSize(950, 400)
+            self.resize(950, 600)  # Set a default size larger than minimum
+
 
             # Apply dark stylesheet
             self.setStyleSheet("""
@@ -685,41 +688,48 @@ if __name__ == "__main__":
                     border-left: 2px solid #444;
                     margin: 0 10px;
                 }
+                
+                QTabWidget::pane {
+                    border: 1px solid #444;
+                    background-color: #2b2b2b;
+                }
+                
+                QTabBar::tab {
+                    background-color: #3c3c3c;
+                    color: #E0E0E0;
+                    padding: 8px 16px;
+                    margin-right: 2px;
+                    border-top-left-radius: 4px;
+                    border-top-right-radius: 4px;
+                }
+                
+                QTabBar::tab:selected {
+                    background-color: #2b2b2b;
+                    border-bottom: 2px solid #0078d4;
+                }
+                
+                QTabBar::tab:hover {
+                    background-color: #404040;
+                }
             """)
 
-            # Central widget and layout
+            # Central widget and tab widget
             central_widget = QWidget()
             self.setCentralWidget(central_widget)
-            main_layout = QHBoxLayout()
+            main_layout = QVBoxLayout()
             central_widget.setLayout(main_layout)
-         
-         
-            # Left Section: Existing UI
-            left_widget = QWidget()
-            left_layout = QVBoxLayout()
-            left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-            left_widget.setLayout(left_layout)
-            main_layout.addWidget(left_widget, 1)
-
-            # Vertical line as divider
-            line = QFrame()
-            line.setFrameShape(QFrame.Shape.VLine)
-            line.setFrameShadow(QFrame.Shadow.Sunken)
-            line.setLineWidth(2)
-            main_layout.addWidget(line)
-
-            # Right Section: Placeholder
-            right_widget = QWidget()
-            right_layout = QVBoxLayout()
-            right_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-            right_widget.setLayout(right_layout)
-            main_layout.addWidget(right_widget, 1)
-
-            # Save references
-            self.layout = left_layout     
-            self.right_layout = right_layout 
-
-
+            
+            # Create tab widget
+            self.tab_widget = QTabWidget()
+            main_layout.addWidget(self.tab_widget)
+            
+            # Create first tab (Main Application)
+            self.create_main_tab()
+            
+            # Create second tab (Guide)
+            self.create_guide_tab()
+            
+            # Initialize your existing variables
             self.gui_config = GUIConfig()
             self.config = Config()
             self.function = "vc"
@@ -730,17 +740,132 @@ if __name__ == "__main__":
             self.input_devices_indices = None
             self.output_devices_indices = None
             self.stream = None
-            self.process=None
+            self.process = None
             self.model_set = load_models(args)
             from funasr import AutoModel
             self.vad_model = AutoModel(model="fsmn-vad", model_revision="v2.0.4")
 
-            self.update_devices() #hostapi, input/output devices, and indices now exist
-
+            self.update_devices()  # hostapi, input/output devices, and indices now exist
 
             self.voice_clone_gui()
             self.face_clone_gui()
 
+        def create_main_tab(self):
+            """Create the main application tab with your existing UI"""
+            main_tab = QWidget()
+            main_tab_layout = QHBoxLayout()
+            main_tab.setLayout(main_tab_layout)
+            
+            # Left Section: Existing UI
+            left_widget = QWidget()
+            left_layout = QVBoxLayout()
+            left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            left_widget.setLayout(left_layout)
+            main_tab_layout.addWidget(left_widget, 1)
+
+            # Vertical line as divider
+            line = QFrame()
+            line.setFrameShape(QFrame.Shape.VLine)
+            line.setFrameShadow(QFrame.Shadow.Sunken)
+            line.setLineWidth(2)
+            main_tab_layout.addWidget(line)
+
+            # Right Section: Placeholder
+            right_widget = QWidget()
+            right_layout = QVBoxLayout()
+            right_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            right_widget.setLayout(right_layout)
+            main_tab_layout.addWidget(right_widget, 1)
+
+            # Save references (these will be used by your existing methods)
+            self.layout = left_layout     
+            self.right_layout = right_layout 
+            
+            # Add the tab to the tab widget
+            self.tab_widget.addTab(main_tab, "Main Application")
+
+        def create_guide_tab(self):
+            """Create the guide tab"""
+            guide_tab = QWidget()
+            guide_layout = QVBoxLayout()
+            guide_tab.setLayout(guide_layout)
+            
+            # Add guide content
+            from PyQt6.QtWidgets import QLabel, QScrollArea, QTextEdit
+            
+            # Create a scrollable area for the guide
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+            
+            # Create guide content widget
+            guide_content = QWidget()
+            guide_content_layout = QVBoxLayout()
+            guide_content.setLayout(guide_content_layout)
+            
+            # Add guide title
+            title_label = QLabel("DoppleDanger User Guide")
+            title_label.setStyleSheet("""
+                QLabel {
+                    font-size: 20px;
+                    font-weight: bold;
+                    text-decoration: underline;
+                    padding: 6px 0;
+                }
+            """)
+            guide_content_layout.addWidget(title_label)
+            
+            # Add guide content using QTextEdit for rich text
+            guide_text = QTextEdit()
+            guide_text.setReadOnly(True)
+            guide_text.setHtml("""
+            <h3>Getting Started</h3>
+            <p>Welcome to DoppleDanger! This application provides live face and voice cloning capabilities.</p>
+            
+            <h3>Voice Cloning Key Components</h3>
+            <ul>
+                <li>You must import a 5-20 second reference audio clip of the voice you would like to clone. Import the audio clip using the <i>Choose reference Audio</i> button</li>
+                <li>Properly choose the input and output device</li>
+                <li>For faster and smoother inference, please keep the <i>Diffusion Steps</i> between 4-15. This however depends on the hardware in use. </li>
+                <li>Make sure <i>Block Time</i> * 1000 (ms conversion) is greater than the <i>inference time</i> (can only check inference time by running the voice). This is very important! </li>
+                <li>Run <i>Start Voice Conversion</i> when your ready!</li>
+                <li>For more details on the other parameters, please refer to the repo</li>
+            </ul>
+            
+            <h3>Face Swapping Key Components</h3>
+            <ul>
+                <li>You must import an image of the person's face you want to clone. Import the image using the <i>Open Source Image</i></li>
+                <li>You must import the ReSwapper model that should be in your ./models folder. Import the model using <i>Open Model File</i></li>
+                <li>Press <i>Start Face Swap</i> to begin face facewap</li>
+                <li>For more details on the other parameters, please refer to the repo</li>
+            </ul>
+            
+            <h3>Tips and Troubleshooting</h3>
+            <ul>
+                <li>Ensure your microphone is properly connected</li>
+                <li>Check audio device permissions</li>
+                <li>For best results, use high-quality input audio and input image</li>
+                <li>Make sure your system meets the minimum requirements(found in the repo)</li>
+            </ul>
+        
+            """)
+            
+            guide_text.setStyleSheet("""
+                QLabel {
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-decoration: underline;
+                    padding: 6px 0;
+                }
+            """)
+            
+            guide_content_layout.addWidget(guide_text)
+            
+            # Set the guide content to the scroll area
+            scroll_area.setWidget(guide_content)
+            guide_layout.addWidget(scroll_area)
+            
+            # Add the guide tab to the tab widget
+            self.tab_widget.addTab(guide_tab, "User Guide")
 
         def closeEvent(self, event):
             # This is called when user clicks the X button
