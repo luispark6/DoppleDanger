@@ -25,6 +25,9 @@ import sys
 import torch
 from seed_vc.modules.commons import str2bool
 import subprocess
+import swap_live_video
+
+
 # Load model and configuration
 device = None
 
@@ -194,7 +197,7 @@ def load_models(args):
         from seed_vc.modules.hifigan.f0_predictor import ConvRNNF0Predictor
         hift_config = yaml.safe_load(open('./seed_vc/configs/hifigan.yml', 'r'))
         hift_gen = HiFTGenerator(**hift_config['hift'], f0_predictor=ConvRNNF0Predictor(**hift_config['f0_predictor']))
-        hift_path = load_custom_model_from_hf("FunAudioLLM/CosyVoice-300M", 'hift.pt', None)
+        hift_path = load_custom_model_from_hf("model-scope/CosyVoice-300M", 'hift.pt', None)
         hift_gen.load_state_dict(torch.load(hift_path, map_location='cpu'))
         hift_gen.eval()
         hift_gen.to(device)
@@ -742,6 +745,8 @@ if __name__ == "__main__":
             self.stream = None
             self.process = None
             self.model_set = load_models(args)
+
+
             from funasr import AutoModel
             self.vad_model = AutoModel(model="fsmn-vad", model_revision="v2.0.4")
 
@@ -971,9 +976,25 @@ if __name__ == "__main__":
             self.process.wait()
         def build_command(self):
             # Assuming your original script is named 'face_swap.py'
-            script_name = "swap_live_video.py"  # Change this to your actual script name
-            
-            cmd = [sys.executable, script_name]
+            # Define the script name (with or without .py/.exe extension)
+            script_name = "swap_live_video"  # Base name (no extension)
+
+            # Check if the current script is running as an EXE (PyInstaller)
+            is_frozen = getattr(sys, 'frozen', False)
+
+            # Determine the correct executable/script path
+            if is_frozen:
+                # Running as EXE → Use .exe version of the script
+                script_path = os.path.join(os.path.dirname(sys.executable), f"{script_name}.exe")
+            else:
+                # Running as .py → Use .py version of the script
+                script_path = f"{script_name}.py"
+
+            # Build the command
+            cmd = [sys.executable if not is_frozen else script_path]  # Use sys.executable for .py, script_path for .exe
+            if not is_frozen:
+                cmd.extend([script_path])
+
             cmd.extend(["--source", self.source_face_button.text()])
             cmd.extend(["--modelPath", self.model_button.text()])
             cmd.extend(["--resolution", self.resolution_textbox.text()])

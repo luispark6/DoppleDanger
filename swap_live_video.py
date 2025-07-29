@@ -7,6 +7,7 @@ import Image
 from insightface.app import FaceAnalysis
 import face_align
 from StyleTransferModel_128 import StyleTransferModel
+# from StyleTransferModel_skip import StyleTransferModel_skip
 import time 
 import line_profiler
 import pyvirtualcam
@@ -99,9 +100,13 @@ def main():
     args = parse_arguments()
     model = load_model(args.modelPath)
     cap = cv2.VideoCapture(0)  # Open webcam
+    width = 640*2
+    height = 480*2
     if args.enhance_res:
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+        width = 1920*2
+        height = 1080*2
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         return
@@ -117,8 +122,9 @@ def main():
     create_latent_flag = True
     prev_time = time.time()
     buffer= deque()
+    
 
-    with pyvirtualcam.Camera(width=960, height=540, fps=20, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
+    with pyvirtualcam.Camera(width=width, height=height, fps=20, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -154,7 +160,6 @@ def main():
                 fps = frame_count / (current_time - prev_time)
                 frame_count = 0
                 prev_time = current_time
-            # print(fps)
 
             faces = faceAnalysis.get(frame)
             if len(faces) == 0:
@@ -217,7 +222,7 @@ def main():
                 
                 if (buffer_end-buffer[0][1])*1000>= args.delay:
                     if cam:
-                        final_frame = cv2.resize(buffer[0][0], (960, 540))
+                        final_frame =  cv2.resize(buffer[0][0], None, fx=2.0, fy=2.0)
                         cam.send(final_frame)
                         cam.sleep_until_next_frame()
                         buffer.popleft()
@@ -246,7 +251,6 @@ def main():
                 while (buffer_end - buffer[0][1])*1000>args.delay:
                     buffer.popleft()
                 print(f"Delay decreased to {args.delay} ms")
-
 
 
     cap.release()
