@@ -36,11 +36,11 @@ Note that reference audio should be a WAV file. Only using MP4 to show on README
 
 
 ## Installation
-### Platform
+### Platform Requirements
 - Windows 
 - [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
 - python==3.10
-- Nvidia Driver Version >= 525.xx 
+- CUDA 12.x and cuDNN 9.x
 ### Clone and Dependencies
 
 ```bash
@@ -58,9 +58,11 @@ pip install -r requirements.txt --no-deps
 
 pip install torch==2.5.1+cu121 torchvision===0.20.1+cu121 torchaudio==2.5.1+cu121 --force --index-url https://download.pytorch.org/whl/cu121
 
-pip install onnxruntime-gpu==1.22.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install onnxruntime-gpu==1.20.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 
 pip install numpy==1.26.4
+
+pip uninstall typing
 
 **Ignore Dependency Warnings
 ```
