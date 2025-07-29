@@ -20,10 +20,10 @@ checkpoints/
 /configs/inuse/
 ffhq/*
 archive/*
-train_model/*
-training/*
-loss.pkl
-steps.pkl
+# train_model/*
+# training/*
+# loss.pkl
+# steps.pkl
 
 # Distribution / packaging
 .Python
