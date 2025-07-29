@@ -41,6 +41,16 @@ Note that reference audio should be a WAV file. Only using MP4 to show on README
 - [ffmpeg](https://www.youtube.com/watch?v=OlNWCpFdVMA)
 - python==3.10
 - CUDA 12.x and cuDNN 9.x
+
+
+### Executable File
+https://drive.google.com/file/d/1ZQ5DhYoYAg7Q0uFXaY0NsQQA0suu8T_3/view?usp=sharing
+
+- Download and unzip the file
+- Download one of the inswapper models found below in the Pretrained Model section which can be found a the bottom of this repository
+- Run unified_gui.exe which can be found in the unzipped file
+ 
+
 ### Clone and Dependencies
 
 ```bash
