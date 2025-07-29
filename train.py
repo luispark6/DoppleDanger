@@ -18,7 +18,7 @@ import face_align
 from StyleTransferModel_128 import StyleTransferModel
 from torch.utils.tensorboard import SummaryWriter
 
-inswapper_128_path = 'inswapper_128.onnx'
+inswapper_128_path = './models/inswapper_128.onnx'
 img_size = 128
 
 providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
