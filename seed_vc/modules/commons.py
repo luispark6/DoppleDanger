@@ -25,7 +25,7 @@ class AttrDict(dict):
 
 def init_weights(m, mean=0.0, std=0.01):
     classname = m.__class__.__name__
-    if classname.find("Conv") != -1:
+    if classname.find("Conv") != -1: 
         m.weight.data.normal_(mean, std)
 
 
@@ -128,14 +128,24 @@ def subsequent_mask(length):
     return mask
 
 
-@torch.jit.script
-def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
+# @torch.jit.script
+def fused_add_tanh_sigmoid_multiply_uncompiled(input_a, input_b, n_channels):
     n_channels_int = n_channels[0]
     in_act = input_a + input_b
     t_act = torch.tanh(in_act[:, :n_channels_int, :])
     s_act = torch.sigmoid(in_act[:, n_channels_int:, :])
     acts = t_act * s_act
     return acts
+
+
+def get_compiled_function():
+    if hasattr(torch, 'compile'):
+        return torch.compile(fused_add_tanh_sigmoid_multiply_uncompiled, mode='max-autotune')
+    return fused_add_tanh_sigmoid_multiply
+
+# Usage:
+fused_add_tanh_sigmoid_multiply = get_compiled_function()
+
 
 
 def convert_pad_shape(pad_shape):
