@@ -79,23 +79,6 @@ pip uninstall typing
 - If these are desired functionalities, please read the **Virtual Camera/Audio** section for more information 
 
 
-### After installation, you’ll need to modify the degradations.py file in your basicsr module only if you want to have converting video capabilties. This is NOT needed for the live face swap and voice cloning
-If using conda, you can typically find this file at:
-```
-<your_env_path>/Lib/site-packages/basicsr/data/degradations.py
-```
-If using python venv, you can typically find this file at:
-```
-.\DoppleDanger\venv\Lib\site-packages\basicsr\data\degradations.py
-```
-The 8th line should look like the following:
-```
-from torchvision.transforms.functional_tensor import rgb_to_grayscale
-```
-Simply change this line to the following:
-```
-from torchvision.transforms.functional import rgb_to_grayscale
-```
 
 
 ## Live Face Swap and Voice Cloning GUI
@@ -182,10 +165,6 @@ python .\swap_live_video.py --source <img>.png --modelPath /path/to/model
 
 
 
-## Quick Use of Converting Video(Optional for high quality face cloning using recorded video)
-```
-python .\swap_video.py --source ..\<img>.png --target_video .\<video>.mp4 --modelPath .\models\<reswapper_model>.pth 
-```
 
 
 
@@ -326,6 +305,33 @@ If you downloaded the ONNX format model before 2024/11/25, please download the m
 ## Attribute Direction
 - [beard_direction.npy
 ](https://huggingface.co/somanchiu/reswapper/tree/main/attributeDirection)
+
+
+
+### After installation, you’ll need to modify the degradations.py file in your basicsr module only if you want to have converting video capabilties. This is NOT needed for the live face swap and voice cloning
+If using conda, you can typically find this file at:
+```
+<your_env_path>/Lib/site-packages/basicsr/data/degradations.py
+```
+If using python venv, you can typically find this file at:
+```
+.\DoppleDanger\venv\Lib\site-packages\basicsr\data\degradations.py
+```
+The 8th line should look like the following:
+```
+from torchvision.transforms.functional_tensor import rgb_to_grayscale
+```
+Simply change this line to the following:
+```
+from torchvision.transforms.functional import rgb_to_grayscale
+```
+
+
+
+## Quick Use of Converting Video(Optional for high quality face cloning using recorded video)
+```
+python .\swap_video.py --source ..\<img>.png --target_video .\<video>.mp4 --modelPath .\models\<reswapper_model>.pth 
+```
 
 ## To Do
 - Create a 512-resolution model (alternative to inswapper_512)
