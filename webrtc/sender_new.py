@@ -5,6 +5,19 @@ import os
 import time
 from aiortc import RTCPeerConnection, VideoStreamTrack, RTCConfiguration, RTCIceServer, RTCSessionDescription
 from av import VideoFrame
+import argparse
+import pyvirtualcam
+from pyvirtualcam import PixelFormat
+import fractions
+
+from contextlib import nullcontext
+
+parser = argparse.ArgumentParser(description='Live face swap via webcam')
+parser.add_argument('--obs',action='store_true', help='Send frames to obs virtual cam')
+
+args = parser.parse_args()
+
+
 
 
 class CameraStreamTrack(VideoStreamTrack):
@@ -14,6 +27,9 @@ class CameraStreamTrack(VideoStreamTrack):
         if not self.cap.isOpened():
             raise RuntimeError("Could not open camera")
 
+        self.target_fps = 13
+        self.last_frame_time = time.time()
+
     async def recv(self):
         pts, time_base = await self.next_timestamp()
         ret, frame = self.cap.read()
@@ -22,7 +38,18 @@ class CameraStreamTrack(VideoStreamTrack):
 
         new_frame = VideoFrame.from_ndarray(frame, format="bgr24")
         new_frame.pts = pts
-        new_frame.time_base = time_base
+
+        elapsed = time.time() - self.last_frame_time
+        target_duration  = 1/self.target_fps
+
+        if elapsed<target_duration:
+            await asyncio.sleep(target_duration-elapsed)
+
+        self.last_frame_time = time.time()
+
+        new_frame.time_base  = fractions.Fraction(1, self.target_fps)
+
+
         return new_frame
 
     def __del__(self):
@@ -64,30 +91,37 @@ async def run_peer_a():
                 frame_count = 0
                 prev_time = time.time()
                 try:
-                    while True:
-                        frame = await track.recv()
-                        img = frame.to_ndarray(format="bgr24")
+                    with pyvirtualcam.Camera(width=640, height=480, fps=13, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
+                        while True:
+                            frame = await track.recv()
+                            img = frame.to_ndarray(format="bgr24")
 
-                        current_time = time.time()
-                        frame_count += 1
-                        if current_time - prev_time >= 0.5:
-                            fps = frame_count / (current_time - prev_time)
-                            frame_count = 0
-                            prev_time = current_time
+                            current_time = time.time()
+                            frame_count += 1
+                            if current_time - prev_time >= 0.5:
+                                fps = frame_count / (current_time - prev_time)
+                                frame_count = 0
+                                prev_time = current_time
 
-                        cv2.putText(
-                            img,
-                            f"FPS: {fps:.2f}",
-                            (10, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.8,
-                            (0, 255, 0),
-                            2,
-                            cv2.LINE_AA
-                        )
-                        cv2.imshow("Received Video", img)
-                        if cv2.waitKey(1) & 0xFF == ord('q'):
-                            break
+                            cv2.putText(
+                                img,
+                                f"FPS: {fps:.2f}",
+                                (10, 30),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.8,
+                                (0, 255, 0),
+                                2,
+                                cv2.LINE_AA
+                            )
+                            if cam:
+                                cam.send(img)
+                                cam.sleep_until_next_frame()
+                            else:
+                                cv2.imshow("Received Video", img)
+
+
+                            if cv2.waitKey(1) & 0xFF == ord('q'):
+                                break
                 except Exception as e:
                     print(f"[Receiver error] {e}")
                 finally:
