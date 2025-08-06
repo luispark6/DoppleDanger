@@ -9,7 +9,7 @@ import argparse
 import pyvirtualcam
 from pyvirtualcam import PixelFormat
 import fractions
-
+from collections import deque
 from contextlib import nullcontext
 
 parser = argparse.ArgumentParser(description='Live face swap via webcam')
@@ -26,6 +26,7 @@ class CameraStreamTrack(VideoStreamTrack):
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             raise RuntimeError("Could not open camera")
+        
 
         self.target_fps = 13
         self.last_frame_time = time.time()
@@ -90,11 +91,24 @@ async def run_peer_a():
                 fps = 0
                 frame_count = 0
                 prev_time = time.time()
+                delay =1
+                cv2.namedWindow('Delay Control')
+                cv2.createTrackbar('Delay (ms)', 'Delay Control', delay, 10000, lambda x: None)
+                cv2.resizeWindow('Delay Control', 500, 2)  # Optional initial size
+                buffer= deque()
                 try:
                     with pyvirtualcam.Camera(width=640, height=480, fps=13, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
                         while True:
                             frame = await track.recv()
                             img = frame.to_ndarray(format="bgr24")
+
+
+                             # Reopen delay control window if closed
+                            if cv2.getWindowProperty('Delay Control', cv2.WND_PROP_VISIBLE) < 1:
+                                cv2.namedWindow('Delay Control')
+                                cv2.createTrackbar('Delay (ms)', 'Delay Control', args.delay, 10000, lambda x: None)
+                                cv2.resizeWindow('Delay Control', 500, 2)
+                                
 
                             current_time = time.time()
                             frame_count += 1
@@ -113,11 +127,31 @@ async def run_peer_a():
                                 2,
                                 cv2.LINE_AA
                             )
-                            if cam:
-                                cam.send(img)
-                                cam.sleep_until_next_frame()
-                            else:
-                                cv2.imshow("Received Video", img)
+
+                            cv2.putText(
+                                img,
+                                f"Delay: {delay} ms",
+                                (10, 60),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.8,
+                                (0, 255, 0),
+                                2,
+                                cv2.LINE_AA
+                            )
+
+
+                            delay = cv2.getTrackbarPos('Delay (ms)', 'Delay Control')
+                            buffer_end = time.time()
+                            buffer.append((img, buffer_end))
+
+                            if (buffer_end-buffer[0][1])*1000>= delay:
+                                if cam:
+                                    cam.send(buffer[0][0])
+                                    buffer.popleft()
+                                    cam.sleep_until_next_frame()
+                                else:
+                                    cv2.imshow("Received Video", buffer[0][0])
+                                    buffer.popleft()
 
 
                             if cv2.waitKey(1) & 0xFF == ord('q'):

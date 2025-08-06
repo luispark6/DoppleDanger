@@ -5,8 +5,8 @@ Offloading the GPU workload of the faceswap to a remote machine. For example, su
 ### Instructions:
 # System Setup Overview
 
-* **Machine A** – This is the powerful machine where live **face swapping** will occur. It must have a capable **GPU** to handle intensive post-processing.
-* **Machine B** – This machine captures the live webcam feed, **sends video frames to Machine A**, and **receives the processed frames** back. It requires minimal GPU resources.
+* **Machine A** – This is the powerful machine where live **face swapping** or **voice cloning** will occur. It must have a capable **GPU** to handle intensive post-processing.
+* **Machine B** – This machine captures the live webcam feed or audio, **sends video/audio frames to Machine A**, and **receives the processed frames** back. It requires minimal GPU resources.
 
 # Setup Instructions
 
@@ -26,14 +26,22 @@ There are many detailed tutorials online for setting up SSH on Windows/Linux.
 * Install required dependencies:
 
 ```bash
-pip install aiortc opencv-python
+pip install aiortc opencv-python sounddevice
 ```
 
-* Run the sender script (***from Machine B obviously***):
+* Run the sender script for either the voice conversion or face swapping (***from Machine B obviously***):
 
 ```bash
-python sender.py
+python sender_fs.py   ##face swapping functionality
+python sender_fs.py --obs  ##outputting the frames to a virtual camera on machine B 
 ```
+OR  
+```bash
+python sender_vc.py   ##voice cloning functionality
+python sender_vc.py --vb_audio  ##outputting the audio to a virtual audio on machine B
+``` 
+
+NOTE YOU MUST INSTALL **OBS** AND **VB_AUDIO** FOR VIRTUAL OUPUTS
 
 ## 2. Transfer `offer.json` to Machine A
 
@@ -61,7 +69,11 @@ cd /path/to/DoppleDanger/webrtc
 * Start the receiver:
 
 ```bash
-python receiver.py
+python receiver_fs.py --source /path/to/ref_img.png --modelPath /path/to/model.pth ##This is for face swapping
+```
+OR
+```bash
+python receiver_vc.py --reference_path /path/to/ref_img.png ##This is for voice cloning
 ```
 
 ## 4. Transfer `answer.json` Back to Machine B
@@ -77,3 +89,8 @@ scp yourname@<your-home-public-ip>:/path/to/DoppleDanger/webrtc/answer.json ./pa
 
 * Go back to the terminal on **Machine B** where `sender.py` is running
 * Press **Enter** to complete the WebRTC handshake and begin streaming
+
+
+## 6. Limitations
+* `sender_vc.py` and `receiver_vc.py` have hard-coded sample rates, frame sizes, etc.. Not dynamic to any audio input and ouput device
+* Voice conversion delay is quite high due to large audio chunk size requirements
