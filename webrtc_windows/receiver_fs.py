@@ -159,7 +159,7 @@ class ProcessingStreamTrack(VideoStreamTrack):
 
 async def run_peer_b():
     print("Waiting for offer.json from Peer A...")
-    while not os.path.exists("./webrtc/offer.json"):
+    while not os.path.exists("./webrtc_windows/offer.json"):
         await asyncio.sleep(1)
         print("Still waiting...")
 
@@ -194,7 +194,7 @@ async def run_peer_b():
             pc.addTrack(processed_track)
             print("Added processed video track")
 
-    with open("./webrtc/offer.json", "r") as f:
+    with open("./webrtc_windows/offer.json", "r") as f:
         offer_data = json.load(f)
 
     offer = RTCSessionDescription(
@@ -217,7 +217,7 @@ async def run_peer_b():
         "type": pc.localDescription.type
     }
 
-    with open("./webrtc/answer.json", "w") as f:
+    with open("./webrtc_windows/answer.json", "w") as f:
         json.dump(answer_data, f, indent=2)
 
     print("\nSTEP 2: Answer and ICE candidates created!")

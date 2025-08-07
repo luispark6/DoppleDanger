@@ -678,7 +678,7 @@ def process_audio(chunk: bytes) -> bytes:
 
 async def run_peer_b():
     print("Waiting for offer.json from Peer A...")
-    while not os.path.exists("./webrtc/offer.json"):
+    while not os.path.exists("./webrtc_windows/offer.json"):
         await asyncio.sleep(1)
         print("Still waiting...")
 
@@ -723,7 +723,7 @@ async def run_peer_b():
                 print(f"⚠️ Received non-bytes message: {message}")
 
     # Load the offer
-    with open("./webrtc/offer.json", "r") as f:
+    with open("./webrtc_windows/offer.json", "r") as f:
         offer_data = json.load(f)
 
     offer = RTCSessionDescription(
@@ -747,7 +747,7 @@ async def run_peer_b():
         "type": pc.localDescription.type
     }
 
-    with open("./webrtc/answer.json", "w") as f:
+    with open("./webrtc_windows/answer.json", "w") as f:
         json.dump(answer_data, f, indent=2)
 
     print("\n✅ STEP 2 complete: Answer and ICE candidates created!")
