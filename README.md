@@ -50,6 +50,8 @@ https://drive.google.com/file/d/1AISt-wCPGW8ofHkx8O3S-4ueL5GG5uV4/view?usp=shari
 - Download one of the inswapper models found below in the Pretrained Model section which can be found a the bottom of this repository
 - Run unified_gui.exe which can be found in the unzipped file
  
+ ### Tutorial for DoppleDanger (for those who cloned and forked, NOT for exe)
+ Youtube Link: https://www.youtube.com/watch?v=VzEpxL9LKuo
 
 ### Clone and Dependencies
 
@@ -76,6 +78,8 @@ pip uninstall typing
 
 **Ignore Dependency Warnings
 ```
+
+
 ### Models
 - You must then install the GFPGAN model and place it in the ```DoppleDanger/models``` directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
 
