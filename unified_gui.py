@@ -144,6 +144,7 @@ def load_models(args):
     fp16 = args.fp16
     print(f"Using fp16: {fp16}")
     if args.checkpoint_path is None or args.checkpoint_path == "":
+     
         dit_checkpoint_path, dit_config_path = load_custom_model_from_hf("Plachta/Seed-VC",
                                                                          "DiT_uvit_tat_xlsr_ema.pth",
                                                                          "config_dit_mel_seed_uvit_xlsr_tiny.yml")
@@ -1547,7 +1548,7 @@ if __name__ == "__main__":
             Audio block callback function
             """
             global flag_vc
-            print(indata.shape)
+            
             start_time = time.perf_counter()
             indata = librosa.to_mono(indata.T)
 
