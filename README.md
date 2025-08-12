@@ -44,7 +44,7 @@ Note that reference audio should be a WAV file. Only using MP4 to show on README
 
 
 ### Executable File
-https://drive.google.com/file/d/1AISt-wCPGW8ofHkx8O3S-4ueL5GG5uV4/view?usp=sharing
+https://drive.google.com/file/d/1Iqk8EizuwpPCKY707acyyt2ZdfHNnFnz/view?usp=sharing
 
 - Download and unzip the file
 - Download one of the inswapper models found below in the Pretrained Model section which can be found a the bottom of this repository
