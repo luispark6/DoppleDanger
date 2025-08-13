@@ -161,8 +161,12 @@ def main():
                 try:
                     source = apply_color_transfer(source_path=args.source, target= frame)
                     orig_source_latent = create_source_latent(source, args.face_attribute_direction, args.face_attribute_steps)
+                    target_latent = create_source_latent(frame, args.face_attribute_direction, args.face_attribute_steps)
+                    
+
                     if orig_source_latent is None:
                         return "Face not found in source image"
+                    orig_source_latent = (orig_source_latent*1.3)-(target_latent*0.1)
                     source_latent=orig_source_latent
                     create_latent_flag = False
                 except:
@@ -234,7 +238,6 @@ def main():
                 alpha =  cv2.getTrackbarPos('TR %', 'Target Retention')
 
                 if prev_alpha!=alpha:
-                    
                     target_latent = create_source_latent(frame, args.face_attribute_direction, args.face_attribute_steps)
                     source_latent = blend(orig_source_latent, target_latent, alpha*0.01)
 
@@ -274,6 +277,9 @@ def main():
                 while (buffer_end - buffer[0][1])*1000>args.delay:
                     buffer.popleft()
                 print(f"Delay decreased to {args.delay} ms")
+
+
+            
 
 
     cap.release()
