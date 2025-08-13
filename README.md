@@ -44,7 +44,7 @@ Note that reference audio should be a WAV file. Only using MP4 to show on README
 
 
 ### Executable File
-https://drive.google.com/file/d/1Iqk8EizuwpPCKY707acyyt2ZdfHNnFnz/view?usp=sharing
+https://drive.google.com/file/d/1ajWxcazIBa24PFNgKkF-uY7ldywBX4eM/view?usp=sharing
 
 - Download and unzip the file
 - Download one of the inswapper models found below in the Pretrained Model section which can be found a the bottom of this repository
@@ -68,7 +68,8 @@ conda activate doppledanger
 
 pip install -r requirements.txt --no-deps
 
-pip install torch==2.5.1+cu121 torchvision===0.20.1+cu121 torchaudio==2.5.1+cu121 --force --index-url https://download.pytorch.org/whl/cu121
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
 
 pip install onnxruntime-gpu==1.20.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 
