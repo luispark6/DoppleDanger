@@ -96,6 +96,9 @@ def apply_color_transfer(source_path, target):
     return cv2.cvtColor(np.clip(source, 0, 255).astype("uint8"), cv2.COLOR_LAB2BGR)
 
 
+def blend(source_latent, target_latent, alpha):
+    return alpha*target_latent + (1-alpha)*source_latent
+
 def main():
     args = parse_arguments()
     model = load_model(args.modelPath)
@@ -118,10 +121,16 @@ def main():
     cv2.createTrackbar('Delay (ms)', 'Delay Control', args.delay, 10000, lambda x: None)
     cv2.resizeWindow('Delay Control', 500, 2)  # Optional initial size
 
+    cv2.namedWindow('Target Retention')
+    cv2.createTrackbar('TR %', 'Target Retention', 0, 100, lambda x: None)
+    cv2.resizeWindow('Target Retention', 500, 2)  
+
 
     create_latent_flag = True
     prev_time = time.time()
     buffer= deque()
+
+    alpha = 0
     
 
     with pyvirtualcam.Camera(width=width, height=height, fps=20, fmt=PixelFormat.BGR) if args.obs else nullcontext() as cam:
@@ -129,6 +138,7 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 break
+            
 
 
             # Reopen delay control window if closed
@@ -136,19 +146,24 @@ def main():
                 cv2.namedWindow('Delay Control')
                 cv2.createTrackbar('Delay (ms)', 'Delay Control', args.delay, 10000, lambda x: None)
                 cv2.resizeWindow('Delay Control', 500, 2)
+
+            if cv2.getWindowProperty('Target Retention', cv2.WND_PROP_VISIBLE) < 1:
+                cv2.namedWindow('Target Retention')
+                cv2.createTrackbar('TR %', 'Target Retention', alpha, 100, lambda x: None)
+                cv2.resizeWindow('Target Retention', 500, 2)  
                 
 
             if cv2.getWindowProperty('Live Face Swap', cv2.WND_PROP_VISIBLE) < 1:
                 cv2.namedWindow('Live Face Swap', cv2.WINDOW_NORMAL)
 
                         
-
             if create_latent_flag:
                 try:
                     source = apply_color_transfer(source_path=args.source, target= frame)
-                    source_latent = create_source_latent(source, args.face_attribute_direction, args.face_attribute_steps)
-                    if source_latent is None:
+                    orig_source_latent = create_source_latent(source, args.face_attribute_direction, args.face_attribute_steps)
+                    if orig_source_latent is None:
                         return "Face not found in source image"
+                    source_latent=orig_source_latent
                     create_latent_flag = False
                 except:
                     cv2.imshow('Live Face Swap', frame)
@@ -215,6 +230,14 @@ def main():
 
                 prev_delay = args.delay
                 args.delay = cv2.getTrackbarPos('Delay (ms)', 'Delay Control')
+                prev_alpha  = alpha
+                alpha =  cv2.getTrackbarPos('TR %', 'Target Retention')
+
+                if prev_alpha!=alpha:
+                    
+                    target_latent = create_source_latent(frame, args.face_attribute_direction, args.face_attribute_steps)
+                    source_latent = blend(orig_source_latent, target_latent, alpha*0.01)
+
 
 
                 buffer_end = time.time()
