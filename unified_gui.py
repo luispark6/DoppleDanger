@@ -285,7 +285,7 @@ def load_models(args):
         wav2vec_model.encoder.layers = wav2vec_model.encoder.layers[:output_layer]
         wav2vec_model = wav2vec_model.to(device)
         wav2vec_model = wav2vec_model.eval()
-        # wav2vec_model = wav2vec_model.half()
+        wav2vec_model = wav2vec_model.half()
 
         def semantic_fn(waves_16k):
             ori_waves_16k_input_list = [
@@ -299,7 +299,7 @@ def load_models(args):
                                                    sampling_rate=16000).to(device)
             with torch.no_grad():
                 ori_outputs = wav2vec_model(
-                    ori_inputs.input_values,
+                    ori_inputs.input_values.half(),
                 )
             S_ori = ori_outputs.last_hidden_state.float()
             return S_ori
