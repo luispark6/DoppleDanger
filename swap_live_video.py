@@ -99,6 +99,8 @@ def apply_color_transfer(source_path, target):
 def blend(source_latent, target_latent, alpha):
     return alpha*target_latent + (1-alpha)*source_latent
 
+
+
 def main():
     args = parse_arguments()
     model = load_model(args.modelPath)
@@ -243,6 +245,7 @@ def main():
 
 
 
+
                 buffer_end = time.time()
                 buffer.append((final_frame, buffer_end))
                 
@@ -277,10 +280,6 @@ def main():
                 while (buffer_end - buffer[0][1])*1000>args.delay:
                     buffer.popleft()
                 print(f"Delay decreased to {args.delay} ms")
-
-
-            
-
 
     cap.release()
     cv2.destroyAllWindows()
