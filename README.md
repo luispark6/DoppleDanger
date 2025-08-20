@@ -68,7 +68,7 @@ conda activate doppledanger
 
 pip install -r requirements.txt --no-deps
 
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu129
 
 
 pip install onnxruntime-gpu==1.20.0 --force --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
