@@ -7,7 +7,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 
-from Discriminatorv3_3 import iresnet50
+from discrimintator_training.Discriminatorv3_3 import iresnet50
 import Image
 import ModelFormat
 from StyleTransferLoss import StyleTransferLoss
