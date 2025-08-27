@@ -81,7 +81,9 @@ pip uninstall typing
 ### Models
 - You must then install the GFPGAN model and place it in the ```DoppleDanger/models``` directory. Download Link: https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth
 
-- Finally, download one of the inswapper models found below in the **Pretrained Model** section and place it in the ```DoppleDanger/models``` directory as well.
+- Finally, download the reswapper model https://drive.google.com/file/d/1UHQiWLSJedRYI1b2MIQ6Z5dEfPsmND5q/view?usp=sharing and place it in the ```DoppleDanger/models``` directory as well. Or download one of the inswapper models found below in the Pretrained Model section which can be found a the bottom of this repository.
+- I highly suggest donwloading the model from the google drive link, as it has been trained with a discriminator which in result produces far better results. For example, the left image was trained with the discriminator whereas the right wasn't.
+![alt text](./media/updated_dis.png "")
 
 - Note that these both should be .pth files
 
