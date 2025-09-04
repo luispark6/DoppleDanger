@@ -10,6 +10,30 @@ emap = np.load("emap.npy")
 input_std = 255.0
 input_mean = 0.0
 
+# Laplacian kernel (same as OpenCV's 3x3)
+laplacian_kernel = torch.tensor(
+    [[0, 1, 0],
+     [1, -4, 1],
+     [0, 1, 0]], dtype=torch.float32
+).view(1, 1, 3, 3).cuda()  # (out_channels, in_channels, h, w)
+
+def deblur_face_torch(face, alpha=0.75):
+    """
+    Deblur using Laplacian sharpening with PyTorch GPU acceleration.
+    face: numpy array (H,W,3) in uint8
+    """
+    # Convert to torch (C,H,W), normalize
+    img = torch.from_numpy(face).permute(2, 0, 1).unsqueeze(0).float().cuda()
+
+    # Apply Laplacian per channel
+    lap = F.conv2d(img, laplacian_kernel.expand(3, 1, 3, 3), padding=1, groups=3)
+
+    sharp = img - alpha * lap
+    sharp = torch.clamp(sharp, 0, 255)
+
+    # Convert back to numpy (H,W,3)
+    return sharp[0].permute(1, 2, 0).byte().cpu().numpy()
+
 def postprocess_face(face_tensor):
     face_tensor = face_tensor.squeeze().cpu().detach()
     face_np = (face_tensor.permute(1, 2, 0).numpy() * 255).astype(np.uint8)
@@ -107,6 +131,8 @@ def blend_swapped_image_gpu(swapped_face, target_image, M):
         (w, h),
         borderMode= 0
     )
+    warped_face = deblur_face_torch(warped_face)
+
     # Create white mask
     img_white = np.full(swapped_face.shape[:2], 255, dtype=np.uint8)
     img_mask = cv2.warpAffine(img_white, M_inv, (w, h), flags=cv2.INTER_NEAREST, borderValue=0)
