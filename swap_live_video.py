@@ -140,6 +140,8 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 break
+
+            
             
 
 
@@ -243,13 +245,18 @@ def main():
                     target_latent = create_source_latent(frame, args.face_attribute_direction, args.face_attribute_steps)
                     source_latent = blend(orig_source_latent, target_latent, alpha*0.01)
 
+                
 
 
 
                 buffer_end = time.time()
+                if alpha==100:
+                    final_frame = frame
                 buffer.append((final_frame, buffer_end))
                 
                 if (buffer_end-buffer[0][1])*1000>= args.delay:
+                    
+
                     if cam:
                         final_frame =  cv2.resize(buffer[0][0], None, fx=2.0, fy=2.0)
                         cam.send(final_frame)
